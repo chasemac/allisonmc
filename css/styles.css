@@ -11344,6 +11344,10 @@ header.masthead h1, header.masthead .h1 {
   }
 }
 
+.font-weight-light {
+  text-align: justify;
+}
+
 .testimonials {
   padding-top: 7rem;
   padding-bottom: 7rem;
