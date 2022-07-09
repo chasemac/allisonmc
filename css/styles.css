@@ -11333,6 +11333,8 @@ header.masthead h1, header.masthead .h1 {
 
 .showcase .showcase-text {
   padding: 3rem;
+  background-color: #ffffff;
+  color: #000
 }
 .showcase .showcase-img {
   min-height: 30rem;
@@ -11344,8 +11346,20 @@ header.masthead h1, header.masthead .h1 {
   }
 }
 
-.font-weight-light {
+.font-p {
   text-align: justify;
+  font-weight: 100;
+}
+
+.font-h1 {
+  font-size: 50px;
+  /* text-align: justify; */
+  font-weight: 800;
+}
+
+.font-h3 {
+  /* text-align: justify; */
+  font-weight: 400;
 }
 
 .testimonials {
