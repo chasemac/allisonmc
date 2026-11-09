@@ -110,6 +110,173 @@
     return text.length > 180 ? "sections" : "overview";
   }
 
+  function specPattern() {
+    return /(?:\+?~?)?(?:\d+'\s*-\s*\d+(?:\s+\d+\/\d+)?"|\d+'\s*x\s*\d+'|\d+(?:\s+\d+\/\d+)?")(?:\s*x\s*(?:\+?~?)?(?:\d+'\s*-\s*\d+(?:\s+\d+\/\d+)?"|\d+'\s*x\s*\d+'|\d+(?:\s+\d+\/\d+)?"))*/g;
+  }
+
+  function isBullet(line) {
+    return /^\s*[-*•]\s+\S/.test(line);
+  }
+
+  function isSubheading(line) {
+    return /^#{2,3}\s+\S/.test(String(line || "").trim());
+  }
+
+  function plainSyntax(value) {
+    return String(value || "").replace(/\*\*([^*\n]+)\*\*/g, "$1").trim();
+  }
+
+  function splitLabel(value) {
+    const match = /^([A-Za-z][^:\n]{0,39}):\s+/.exec(value);
+    if (!match) return null;
+    if (/[<>*]|https?:/i.test(match[1])) return null;
+    return { label: match[1] + ":", rest: value.slice(match[0].length) };
+  }
+
+  function parseInlines(value) {
+    const pieces = [];
+    const bold = /\*\*([^*\n]{1,80})\*\*/g;
+    let last = 0;
+    let match;
+    while ((match = bold.exec(value))) {
+      if (match.index > last) pieces.push({ text: value.slice(last, match.index), bold: false });
+      pieces.push({ text: match[1], bold: true });
+      last = bold.lastIndex;
+    }
+    if (last < value.length) pieces.push({ text: value.slice(last), bold: false });
+    if (!pieces.length) pieces.push({ text: value, bold: false });
+    if (pieces[0] && !pieces[0].bold) {
+      const labeled = splitLabel(pieces[0].text);
+      if (labeled) {
+        const replacement = [{ text: labeled.label, bold: true }];
+        if (labeled.rest) replacement.push({ text: " " + labeled.rest, bold: false });
+        pieces.splice(0, 1, ...replacement);
+      }
+    }
+    const out = [];
+    for (const piece of pieces) {
+      const specs = specPattern();
+      let cursor = 0;
+      let spec;
+      while ((spec = specs.exec(piece.text))) {
+        if (spec.index > cursor) out.push({ text: piece.text.slice(cursor, spec.index), bold: piece.bold, spec: false });
+        out.push({ text: spec[0], bold: piece.bold, spec: true });
+        cursor = specs.lastIndex;
+        if (!spec[0]) break;
+      }
+      if (cursor < piece.text.length) out.push({ text: piece.text.slice(cursor), bold: piece.bold, spec: false });
+    }
+    return out.filter((part) => part.text);
+  }
+
+  function chunkProse(value) {
+    if (value.length <= 240) return [value];
+    const parts = value.split(/(?<=[.!?])\s+(?=[A-Z"“])/);
+    if (parts.length < 2) return [value];
+    const chunks = [];
+    let current = "";
+    for (const part of parts) {
+      const next = current ? current + " " + part : part;
+      if (current && next.length > 220) {
+        chunks.push(current);
+        current = part;
+      } else {
+        current = next;
+      }
+    }
+    if (current) chunks.push(current);
+    return chunks;
+  }
+
+  function parseSectionText(raw) {
+    const lines = String(raw == null ? "" : raw).replace(/\r\n/g, "\n").split("\n");
+    const blocks = [];
+    let index = 0;
+    while (index < lines.length) {
+      if (!lines[index].trim()) {
+        index += 1;
+        continue;
+      }
+      const heading = /^(#{2,3})\s+(\S.*)$/.exec(lines[index].trim());
+      if (heading) {
+        blocks.push({ type: "heading", text: plainSyntax(heading[2]) });
+        index += 1;
+        continue;
+      }
+      if (isBullet(lines[index])) {
+        const items = [];
+        while (index < lines.length && isBullet(lines[index])) {
+          items.push(parseInlines(lines[index].replace(/^\s*[-*•]\s+/, "")));
+          index += 1;
+        }
+        blocks.push({ type: "list", items });
+        continue;
+      }
+      const para = [];
+      while (index < lines.length && lines[index].trim() && !isSubheading(lines[index]) && !isBullet(lines[index])) {
+        para.push(lines[index].trim());
+        index += 1;
+      }
+      for (const chunk of chunkProse(para.join(" "))) {
+        blocks.push({ type: "paragraph", inlines: parseInlines(chunk) });
+      }
+    }
+    return blocks;
+  }
+
+  function inlineClass(part) {
+    const names = [];
+    if (part.bold) names.push("label");
+    if (part.spec) names.push("spec");
+    return names.join(" ");
+  }
+
+  function appendInlines(node, parts) {
+    for (const part of parts) node.append(el("span", inlineClass(part), part.text));
+  }
+
+  function renderProse(raw) {
+    const wrap = el("div", "section-prose");
+    for (const block of parseSectionText(raw)) {
+      if (block.type === "heading") {
+        wrap.append(el("h3", "", block.text));
+      } else if (block.type === "list") {
+        const list = el("ul");
+        for (const item of block.items) {
+          const li = el("li");
+          appendInlines(li, item);
+          list.append(li);
+        }
+        wrap.append(list);
+      } else {
+        const paragraph = el("p");
+        appendInlines(paragraph, block.inlines);
+        wrap.append(paragraph);
+      }
+    }
+    return wrap;
+  }
+
+  function previewLine(section) {
+    if (section && typeof section.summary === "string" && section.summary.trim()) {
+      return section.summary.replace(/\s+/g, " ").trim();
+    }
+    const raw = (section && section.blocks ? section.blocks : [])
+      .filter((block) => block && block.type === "text" && typeof block.text === "string")
+      .map((block) => block.text)
+      .join("\n");
+    const lines = raw.replace(/\r\n/g, "\n").split("\n").map((line) => line.trim()).filter(Boolean);
+    const useful = lines.find((line) => !isSubheading(line)) || lines[0] || "";
+    let line = plainSyntax(useful.replace(/^\s*[-*•]\s+/, "")).replace(/\s+/g, " ").trim();
+    if (!line) return "";
+    const sentence = /^.{1,140}?[.!?](?=\s|$)/.exec(line);
+    if (sentence && sentence[0].length <= 120) return sentence[0];
+    if (line.length <= 110) return line;
+    const cut = line.slice(0, 107);
+    const space = cut.lastIndexOf(" ");
+    return (space > 60 ? cut.slice(0, space) : cut).replace(/[\s,;:–-]+$/u, "") + "…";
+  }
+
   function appendBlocks(parent, section, presentation) {
     for (const block of section.blocks || []) {
       if (!block || typeof block !== "object") continue;
@@ -126,7 +293,7 @@
         open.rel = "noopener noreferrer";
         parent.append(open);
       } else if (block.type === "text" && typeof block.text === "string") {
-        parent.append(el("p", "", block.text));
+        parent.append(renderProse(block.text));
       } else if (block.type === "gallery" && Array.isArray(block.images)) {
         parent.append(renderGallery(presentation.id, block.images));
       } else if (block.type === "attachment") {
@@ -145,6 +312,12 @@
     }
     const title = document.getElementById("page-title");
     if (title && typeof presentation.title === "string") title.textContent = presentation.title;
+    const subtitle = document.getElementById("page-subtitle");
+    if (subtitle) {
+      const line = typeof presentation.subtitle === "string" ? presentation.subtitle.trim() : "";
+      subtitle.textContent = line;
+      subtitle.hidden = line.length === 0;
+    }
     const kicker = document.getElementById("page-kicker");
     if (kicker) kicker.textContent = presentation.fictional === true ? "Fictional demo" : "Project";
 
@@ -227,13 +400,20 @@
     }
     grouped.sections.forEach((section, index) => {
       const details = document.createElement("details");
-      details.className = "fold";
+      details.className = "section-card";
       details.id = "s-" + section.id;
       if (index === 0) details.open = true;
       const summary = document.createElement("summary");
-      summary.textContent = String(section.title || "Section");
+      summary.append(el("span", "section-card-title", String(section.title || "Section")));
+      const line = previewLine(section);
+      if (line) {
+        const preview = el("span", "section-card-line", line);
+        const authored = typeof section.summary === "string" && section.summary.trim().length > 0;
+        if (!authored) preview.setAttribute("data-generated", "true");
+        summary.append(preview);
+      }
       details.append(summary);
-      const body = el("div", "fold-body");
+      const body = el("div", "section-card-body");
       appendBlocks(body, section, presentation);
       details.append(body);
       panels.sections.append(details);
@@ -377,7 +557,7 @@
     });
   }
 
-  const api = { renderProject, isHttps };
+  const api = { renderProject, isHttps, parseSectionText };
   globalThis.projectView = api;
   if (typeof document !== "undefined" && document.getElementById) boot();
 })();

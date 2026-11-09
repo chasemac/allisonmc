@@ -42,7 +42,11 @@ Uploading the same submission id again with different bytes is an error. A corre
 
 ## Document shape
 
-`content.json` is the only JSON document. Its fields are `projectId`, `submissionId`, `title`, `client`, `location`, `preparedBy`, `date`, `notesForReviewers`, `content`, and `assets`. `content` is `{ summary, sections: [{ id, heading, body }] }`. Each asset is `{ path, role, note }`. Paths start with `assets/` and contain no `..`.
+`content.json` is the only JSON document. Its fields are `projectId`, `submissionId`, `title`, `subtitle`, `client`, `location`, `preparedBy`, `date`, `notesForReviewers`, `content`, and `assets`. `subtitle` is optional. `content` is `{ summary, sections: [{ id, heading, body, summary }] }`. A section `summary` is optional. Each asset is `{ path, role, note }`. Paths start with `assets/` and contain no `..`.
+
+`title` is the page heading. `subtitle` is the smaller line under that heading. Leave `subtitle` out and the page shows only `title`, as before. On a phone the heading uses a smaller size either way.
+
+Section `body` stays one string. Blank lines, `- ` lists, `## ` subheadings, and `**bold**` are layout marks, not HTML. The page escapes the characters and does not run markup from the string. `summary` is the one line on a collapsed section card. Leave it out and the page uses the first sentence. A shape example is [templates/content.example.json](../../templates/content.example.json). The marks are written out in [templates/section-text.md](../../templates/section-text.md).
 
 Roles:
 

@@ -90,6 +90,9 @@ test("pages link to real files and do not load the old template", () => {
   assert.ok(contrast(colors.muted, colors.paper) >= 4.5);
   assert.ok(contrast(colors.cypress, colors.paper) >= 4.5);
   assert.ok(contrast("#f6f1e8", colors.cypress) >= 4.5);
+  assert.ok(contrast(colors.ink, "#fffdf9") >= 7);
+  assert.ok(contrast(colors.muted, "#fffdf9") >= 4.5);
+  assert.ok(contrast(colors.cypress, "#fffdf9") >= 4.5);
   assert.ok(contrast(colors.danger, colors.paper) >= 4.5);
 });
 

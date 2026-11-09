@@ -68,9 +68,14 @@ function boot(project) {
   vm.createContext(context);
   context.globalThis = context;
   vm.runInContext(readFileSync("js/view.js", "utf8"), context);
+  const title = document.createElement("h1");
+  title.id = "page-title";
+  const subtitle = document.createElement("p");
+  subtitle.id = "page-subtitle";
+  subtitle.hidden = true;
   const root = document.createElement("div");
   context.projectView.renderProject(root, project);
-  return { root, nodes };
+  return { root, nodes, context };
 }
 
 test("a heavy project uses four tabs and shows one panel", () => {
@@ -89,6 +94,34 @@ test("a heavy project uses four tabs and shows one panel", () => {
   const css = readFileSync("css/styles.css", "utf8");
   assert.match(css, /a\.open-widget:hover[\s\S]*color:\s*#f6f1e8/);
   assert.match(css, /\.project-tab\[aria-selected="true"\]:hover[\s\S]*color:\s*#f6f1e8/);
+  assert.match(css, /#page-title\s*\{[^}]*font-size:\s*1\.75rem/);
+  assert.match(css, /\.section-prose\s*\{[^}]*max-width:\s*38rem/);
+  const cards = nodes.filter((node) => node.className === "section-card");
+  assert.equal(cards.length >= 8, true);
+  assert.equal(cards[0].open, true);
+  assert.equal(cards[1].open, false);
+  assert.equal(nodes.find((node) => node.id === "page-title").textContent, "Northglass Reading Room");
+  const subtitle = nodes.find((node) => node.id === "page-subtitle");
+  assert.equal(subtitle.hidden, false);
+  assert.equal(subtitle.textContent, "Fictional demo for private viewing, not a client project");
+  const openCard = nodes.find((node) => node.id === "s-option-a");
+  assert.equal(openCard.children.some((node) => node.tagName === "SUMMARY"), true);
+  assert.equal(openCard.textContent.includes("Nothing here is a real client"), true);
+  assert.equal(openCard.textContent.includes("36\""), true);
+  assert.equal(openCard.textContent.includes("9'-0\""), true);
+  assert.equal(openCard.textContent.includes("3'-0\" x 4'-0\""), true);
+  assert.equal(nodes.some((node) => node.tagName === "H3" && node.textContent === "West wall"), true);
+  assert.equal(nodes.some((node) => node.tagName === "UL"), true);
+  assert.equal(nodes.some((node) => node.className === "label" && node.textContent === "West wall:"), true);
+  assert.equal(nodes.some((node) => node.className === "spec" && node.textContent === "36\""), true);
+  const collapsed = nodes.find((node) => node.id === "s-option-b");
+  const authored = collapsed.children[0].children.find((node) => node.className === "section-card-line");
+  assert.equal(authored.textContent, "Invented glazed wall, roof, and window detail.");
+  assert.equal(authored.attrs["data-generated"], undefined);
+  assert.equal(collapsed.textContent.includes("Another invented paragraph"), true);
+  const generated = nodes.find((node) => node.id === "s-option-h").children[0].children.find((node) => node.className === "section-card-line");
+  assert.equal(generated.attrs["data-generated"], "true");
+  assert.match(generated.textContent, /Eighth invented section/);
 });
 
 test("3D preview snapshots stay with the model files, not the drawings", () => {
@@ -127,4 +160,49 @@ test("3D preview snapshots stay with the model files, not the drawings", () => {
   assert.equal(files.textContent.includes("Fictional snapshot caption"), true);
   const download = nodes.find((node) => node.tagName === "A" && String(node.href || "").includes("/attachments/notes"));
   assert.ok(download);
+  assert.equal(nodes.find((node) => node.id === "page-subtitle").hidden, true);
+});
+
+test("section text becomes lists and headings without accepting HTML", () => {
+  const hostile = [
+    "## West wall",
+    "",
+    "- West wall: <img src=x onerror=alert(1)> beside a 36\" shelf.",
+    "- North wall: a 15'-7\" x 12'-2 1/2\" invented opening, plus 3'x4', ~15\", and +11\".",
+    "",
+    "Model M-101 stays a name. **<script>alert(1)</script>** is still text. This sentence is here so the section is long enough to land on the Sections tab instead of the overview. The second sentence keeps the whole note in that tab.",
+  ].join("\n");
+  const project = {
+    id: "demo-northglass",
+    title: "<script>alert(1)</script>",
+    summary: "Synthetic summary.",
+    fictional: true,
+    sections: [{ id: "walls", title: "Walls <script>", blocks: [{ type: "text", text: hostile }] }],
+    attachments: [],
+  };
+  const { root, nodes, context } = boot(project);
+  assert.equal(nodes.some((node) => node.tagName === "SCRIPT" || node.tagName === "IMG"), false);
+  assert.equal(root.textContent.includes("<img src=x onerror=alert(1)>"), true);
+  assert.equal(root.textContent.includes("<script>alert(1)</script>"), true);
+  assert.equal(nodes.find((node) => node.id === "page-title").textContent, "<script>alert(1)</script>");
+  const specs = nodes.filter((node) => (node.className || "").split(/\s+/).includes("spec")).map((node) => node.textContent);
+  assert.equal(specs.includes("36\""), true);
+  assert.equal(specs.includes("15'-7\" x 12'-2 1/2\""), true);
+  assert.equal(specs.includes("3'x4'"), true);
+  assert.equal(specs.includes("~15\""), true);
+  assert.equal(specs.includes("+11\""), true);
+  assert.equal(specs.includes("M-101"), false);
+  const parsed = context.projectView.parseSectionText(hostile);
+  assert.equal(parsed[0].type, "heading");
+  assert.equal(parsed[0].text, "West wall");
+  assert.equal(parsed[1].type, "list");
+  assert.equal(parsed[1].items.length, 2);
+  assert.equal(parsed.some((block) => block.type === "paragraph"), true);
+  const flat = parsed.flatMap((block) => {
+    if (block.type === "heading") return [block.text];
+    if (block.type === "list") return block.items.flat().map((part) => part.text);
+    return block.inlines.map((part) => part.text);
+  }).join("");
+  const keep = (value) => value.replace(/\*\*/g, "").replace(/^#{2,3}\s+/gm, "").replace(/^\s*[-*•]\s+/gm, "").replace(/\s+/g, "");
+  assert.equal(keep(flat), keep(hostile));
 });

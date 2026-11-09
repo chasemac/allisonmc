@@ -35,6 +35,8 @@ Clients open one curated project with a code. There is no account, admin site, o
 
 Client files stay out of this repo. A maintainer publishes from a verified local snapshot with the commands in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md). `DATA_STORE` and `MEDIA_STORE` stay unset until that path is reviewed and a real project is ready, so hosted project access stays closed. Agent constraints are in [AGENTS.md](AGENTS.md).
 
+The project heading is `title` in `content.json`. An optional `subtitle` is the smaller line under it. Each content section is `{ id, heading, body, summary }`. `summary` is optional and is the one line on a collapsed section card. `body` can include blank lines, lines that start with `- `, lines that start with `## `, and `**bold**` labels such as `West wall:`. The page escapes that text. It does not accept HTML in the body. Older snapshots that have only `title` and a plain `body` still render. The field list is in [templates/content.example.json](templates/content.example.json), and the body marks are in [templates/section-text.md](templates/section-text.md).
+
 - One Vercel Function (`api/handler.js`). `vercel.json` rewrites `/api/(.*)` to it so multi-segment paths such as `/api/projects/:id/media/:mid` are not dropped.
 - Neon Postgres for projects, HMAC share-code hashes, sessions, and the shared rate limit
 - Vercel Blob **private** store for media, read with `get(pathname, { access: "private" })` and streamed by the function after the session check
