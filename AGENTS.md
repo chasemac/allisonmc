@@ -18,7 +18,7 @@ The live site is that Vercel project. `allisonmc.com` and `www.allisonmc.com` ar
 
 ## Stack
 
-Public pages are static HTML, CSS, and a small client script. The build is `node scripts/prepare-static.mjs`. Output is `dist/`. Do not add a framework or an admin site. Files under `/assets/` are cached for 30 days, so the build appends `?v=<content hash>` to every `assets/` reference in the built HTML (`scripts/asset-version.mjs`). Replace an image at the same path and its URL changes on the next deploy; reference new public assets from the four HTML pages, not from CSS or JS.
+Public pages are static HTML, CSS, and a small client script. The build is `node scripts/prepare-static.mjs`. Output is `dist/`. Do not add a framework or an admin site. Files under `/assets/` are cached for 30 days, so the build appends `?v=<content hash>` to every `assets/` reference in the built HTML (`scripts/asset-version.mjs`). Replace an image at the same path and its URL changes on the next deploy; reference new public assets from the four HTML pages, not from CSS or JS. The two Lato preload links sit between `lato-preloads` markers in each page. They are generated from Google's Lato stylesheet (latin, upright 400 and 700): the build refreshes them in `dist/`, keeping the committed links if Google can't be reached, and `node scripts/lato-preloads.mjs` (or `--check`) updates or checks the committed pages. Do not hand-edit them.
 
 One Vercel Function, `api/handler.js`, serves the API. `vercel.json` rewrites `/api/(.*)` to `/api/handler`, so paths such as `/api/projects/:id/media/:mid` and `/api/projects/:id/widgets/:mediaId/open` are not dropped. `/view` rewrites to `/view.html`. `/musings` rewrites to `/musings.html`.
 

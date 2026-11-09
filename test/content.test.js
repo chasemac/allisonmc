@@ -106,7 +106,7 @@ test("pages link to real files and do not load the old template", () => {
 });
 
 test("static output omits server code, secrets, and the fixture code", () => {
-  const built = spawnSync(process.execPath, ["scripts/prepare-static.mjs"], { encoding: "utf8" });
+  const built = spawnSync(process.execPath, ["scripts/prepare-static.mjs"], { encoding: "utf8", env: { ...process.env, AMC_FONT_PRELOADS: "skip" } });
   assert.equal(built.status, 0, built.stderr);
   assert.equal(existsSync("dist/index.html"), true);
   assert.equal(existsSync("dist/lib"), false);
