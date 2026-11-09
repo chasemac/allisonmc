@@ -383,39 +383,86 @@ dialog button {
   margin-top: 0.5rem;
 }
 
-.section-nav ul {
+.project-bar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
-  list-style: none;
-  margin: 1.25rem 0 0.25rem;
-  padding: 0;
+  margin: 0.4rem 0 0.8rem;
+  padding: 0.45rem 0;
+  background: var(--paper);
 }
 
-.section-nav a {
-  display: inline-block;
-  max-width: 100%;
-  padding: 0.45rem 0.75rem;
+.tablist {
+  display: flex;
+  flex: 1;
+  gap: 0.35rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.project-tab,
+.project-tab:hover,
+.project-tab:focus,
+.project-tab:active {
+  flex: 0 0 auto;
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink);
-  text-decoration: none;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  font: inherit;
+  cursor: pointer;
 }
 
-.section-nav a:hover,
-.section-nav a:focus-visible {
+.project-tab[aria-selected="true"],
+.project-tab[aria-selected="true"]:hover,
+.project-tab[aria-selected="true"]:focus,
+.project-tab[aria-selected="true"]:active {
+  background: var(--cypress);
   border-color: var(--cypress);
+  color: #f6f1e8;
+}
+
+.project-tab:focus-visible,
+#leave-project:focus-visible {
   outline: 2px solid var(--cypress);
   outline-offset: 2px;
 }
 
 #leave-project {
-  margin-top: 1.1rem;
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
 }
 
-.open-widget {
+.tab-panel[hidden] {
+  display: none;
+}
+
+.fold {
+  border-top: 1px solid var(--line);
+}
+
+.fold summary {
+  padding: 0.85rem 0.1rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.fold-body {
+  padding: 0 0 0.9rem;
+}
+
+a.open-widget,
+a.open-widget:hover,
+a.open-widget:focus,
+a.open-widget:focus-visible,
+a.open-widget:active {
   display: inline-block;
   margin: 0 0 0.85rem;
   padding: 0.8rem 1rem;
@@ -569,20 +616,14 @@ dialog img {
     grid-template-columns: 1fr;
   }
 
-  .section-nav ul {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.4rem;
-  }
-
-  .section-nav a {
-    display: block;
-    padding: 0.75rem 0.85rem;
-  }
-
-  .open-widget {
+  a.open-widget,
+  a.open-widget:hover,
+  a.open-widget:focus,
+  a.open-widget:active {
     display: block;
     text-align: center;
+    background: var(--cypress);
+    color: #f6f1e8;
   }
 }
 
