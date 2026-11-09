@@ -6,7 +6,7 @@ Operators with the developer CLI can seed the fictional demo and maintain test d
 
 ## What a client sees
 
-`/view` asks for a code. A valid code sets an HttpOnly, SameSite=Strict session cookie scoped to one project. The page then shows that project's sections, a gallery with a lightbox, a link that opens a widget in a new tab when the project has one, and any approved files or `https` links. Text is inserted as text, not HTML. The widget page is not embedded. Its response CSP sandboxes it so it does not share the parent origin. Leaving the project revokes that session.
+`/view` asks for a code. A valid code sets an HttpOnly, SameSite=Strict session cookie scoped to one project. The page then shows that project's sections, a gallery with a lightbox, a link that opens a widget in a new tab when the project has one, and any approved files or `https` links. Text is inserted as text, not HTML. The widget page is not embedded. Its response CSP sandboxes it so it does not share the parent origin. The page does not show a leave button. `POST /api/logout` still revokes a session.
 
 The session lasts at most 12 hours and never longer than the code. Every project, media, widget, and file request checks the session, the code expiry, and the revocation flag. A session for one project gets a not-found response for another project's id.
 
