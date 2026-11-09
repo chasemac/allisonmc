@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 // The Lato preload links are generated from Google's own stylesheet, so a
 // renamed font file does not leave the pages preloading a dead URL.
@@ -66,7 +67,7 @@ export async function refreshPreloads(dir, pages, options) {
 
 // `node scripts/lato-preloads.mjs` updates the committed pages;
 // `--check` exits 1 when they are out of date.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const pages = ["index.html", "musings.html", "view.html", "404.html"];
   const urls = await fetchLatoUrls();
   if (process.argv.includes("--check")) {
