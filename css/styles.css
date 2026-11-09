@@ -6,8 +6,9 @@
   --muted: #3e382f;
   --line: #d3cbc0;
   --danger: #6f2a1e;
-  --serif: "Fraunces", "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
-  --sans: Outfit, "Avenir Next", "Segoe UI", sans-serif;
+  --font: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: var(--font);
+  --sans: var(--font);
   color-scheme: light;
   background: var(--desk);
   color: var(--ink);
@@ -30,9 +31,10 @@ body {
     linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 12rem),
     var(--desk);
   color: var(--ink);
-  font-family: var(--sans);
+  font-family: var(--font);
   font-size: 1.0625rem;
   font-weight: 400;
+  font-synthesis: none;
   line-height: 1.5;
 }
 
@@ -96,8 +98,8 @@ a:hover {
   color: var(--ink);
   text-decoration: none;
   font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -163,20 +165,25 @@ a:hover {
 }
 
 h1,
+h2,
+h3,
+.page-title {
+  font-family: var(--font);
+  font-weight: 700;
+}
+
+h1,
 .page-title {
   margin: 0;
-  font-family: var(--serif);
-  font-weight: 500;
-  font-optical-sizing: auto;
-  font-size: clamp(2.8rem, 8vw, 6.6rem);
-  letter-spacing: -0.045em;
-  line-height: 0.9;
+  font-size: clamp(2.25rem, 4.6vw, 4.25rem);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
 }
 
 #page-title {
-  font-size: clamp(2.05rem, 4vw, 3.35rem);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.85rem, 3.2vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
   max-width: 20ch;
 }
 
@@ -184,9 +191,9 @@ h1,
   margin: 0.4rem 0 0;
   max-width: 36rem;
   color: var(--ink);
-  font-family: var(--sans);
+  font-family: var(--font);
   font-size: 1.02rem;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.4;
 }
 
@@ -201,8 +208,8 @@ h1,
   margin: 1.35rem 0 0;
   color: var(--cypress);
   font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  font-weight: 400;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
@@ -215,10 +222,10 @@ h1,
 .summary,
 .entry figcaption p,
 .project-section p {
-  font-family: var(--serif);
-  font-size: 1.2rem;
-  font-weight: 500;
-  line-height: 1.55;
+  font-family: var(--font);
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 .bio {
@@ -268,8 +275,8 @@ h1,
   margin: 0 0 0.75rem;
   color: var(--cypress);
   font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
@@ -318,6 +325,7 @@ h1,
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.86rem;
+  font-weight: 300;
 }
 
 .site-footer a {
@@ -500,11 +508,11 @@ dialog button {
 .section-card-title {
   display: block;
   color: var(--ink);
-  font-family: var(--serif);
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  font-family: var(--font);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .section-card-line {
@@ -514,6 +522,7 @@ dialog button {
   overflow: hidden;
   color: var(--muted);
   font-size: 0.95rem;
+  font-weight: 300;
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -540,10 +549,10 @@ dialog button {
 .section-prose h3 {
   margin: 1rem 0 0.4rem;
   color: var(--cypress);
-  font-family: var(--sans);
+  font-family: var(--font);
   font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   line-height: 1.3;
   text-transform: uppercase;
 }
@@ -553,10 +562,10 @@ dialog button {
 .section-prose li {
   max-width: 38rem;
   color: var(--ink);
-  font-family: var(--serif);
+  font-family: var(--font);
   font-size: 1.05rem;
-  font-weight: 500;
-  line-height: 1.5;
+  font-weight: 400;
+  line-height: 1.55;
 }
 
 .section-prose p {
@@ -575,12 +584,12 @@ dialog button {
 
 .section-prose li .label,
 .section-prose p .label {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .section-prose .spec {
-  font-family: var(--sans);
-  font-weight: 500;
+  font-family: var(--font);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
@@ -596,7 +605,8 @@ a.open-widget:active {
   background: var(--cypress);
   color: #f6f1e8;
   text-decoration: none;
-  font-family: var(--sans);
+  font-family: var(--font);
+  font-weight: 700;
 }
 
 .project-section {
@@ -606,10 +616,11 @@ a.open-widget:active {
 
 .project-section h2 {
   margin: 0 0 0.8rem;
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  letter-spacing: -0.03em;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.5vw, 2.15rem);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
 }
 
 .gallery {
@@ -644,6 +655,7 @@ a.open-widget:active {
   margin-top: 0.45rem;
   color: var(--muted);
   font-size: 0.82rem;
+  font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -741,7 +753,7 @@ dialog img {
 
   #page-title {
     font-size: 1.75rem;
-    line-height: 1.12;
+    line-height: 1.2;
     max-width: none;
   }
 
