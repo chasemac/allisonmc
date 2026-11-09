@@ -13,7 +13,7 @@ This document uses placeholders. It contains no client names, project ids, submi
 | Peppers | Production and preview each have their own `CODE_PEPPER`. |
 | Activation | `DATA_STORE` and `MEDIA_STORE` stay unset on Vercel. `/api/access` stays 503 until those two are set after review. |
 
-Production and preview share that one database. A code is stored as `HMAC-SHA256(CODE_PEPPER, normalized code)`. Importing or rotating with the preview pepper writes hashes the production pepper will not recognize, and the other way around. Do not point the preview pepper at this database.
+Preview must not hold the production database URL, Blob store id, or Blob token. A preview pepper plus those credentials can write a second HMAC and can seal or publish. Hosted preview is fail-closed in code, and the maintenance CLI refuses `VERCEL_ENV=preview` before it connects. `AMC_TARGET=production` only selects the operator's shell. It does not make a preview credential safe. Remove `DATABASE_URL`, `BLOB_STORE_ID`, and Blob tokens from the Vercel Preview environment. Do not remove them from Production. This change does not edit those variables.
 
 The maintenance CLI for a live project uses the production environment only:
 
@@ -53,7 +53,7 @@ Roles:
 | `downloadable-pdf` | `.pdf` download |
 | `hero`, `3d-preview`, `gallery`, `page-preview`, `plan-sheet`, `proposal-preview`, `punchlist-preview`, `reference-photo` | `.png`, `.jpg`, `.jpeg`, or `.webp` |
 
-Every asset path must exist, and every file except `READY.json` and `DERIVED.json` must be listed. The counts have to match. The media id is the basename without its extension. Two files that would share that id are rejected. Names match `^[A-Za-z0-9._-]{1,80}$`. Each file must be at most 20 MB. A short signature prefix is not a full sanitizer.
+Every asset path must exist, and every file except `READY.json` and `DERIVED.json` must be listed. The counts have to match. The media id is the basename without its extension. Two files that would share that id are rejected. Names match `^[A-Za-z0-9._-]{1,80}$`. Each file, including HTML and DAE, must be at most 20 MB. The size is checked before the file is read into a buffer. A short signature prefix is not a full sanitizer. A DAE `init_from` must be the exact path of another file in the submission. Suffix matches, CDATA, doctypes, entities, and external URLs are rejected. The parser does not load or execute XML.
 
 A validated handoff of 31 files is `content.json`, one HTML widget, two DAE files, four PDFs, 21 PNGs, and two JPEGs. The roles on those images come from `content.json`. This repository does not contain that handoff, and this branch does not publish it.
 
@@ -61,9 +61,9 @@ The viewer adds a details section and a notes section when those fields are pres
 
 ## Widget and the derived snapshot
 
-`seal` rejects an HTML file that is not self-contained. An `https` script, stylesheet link, network call, nested frame, or any `http` URL fails the check. The response CSP stays `connect-src 'none'`. Do not widen it to make a remote script load.
+`seal` rejects an HTML file that is not self-contained. An `https` script, stylesheet link, network call, nested frame, or any `http` URL fails that check. The check is not a JavaScript sanitizer. A widget is shown from a same-origin fetch, then as a nested `srcdoc` document whose base URL is `about:blank` and whose sandbox is exactly `allow-scripts allow-downloads`. Its location does not include the project path. `connect-src 'none'` blocks fetches. The frame can still read the public site origin from `ancestorOrigins`. Do not widen the sandbox or the policy to make a remote script load.
 
-The unused Tailwind script is removed only by `derive`, which writes a new directory and a new submission id. It does not download the script, and it does not change the original directory or the original `READY.json`. The new directory contains `DERIVED.json`:
+`derive` removes only the one approved unused Tailwind script named by `APPROVED_UNUSED_SCRIPT`. Any other external script, including one the page needs, is left in place and the command fails. It writes a new directory and a new submission id. It refuses a symlink output, does not follow links into the original, and does not change the original directory or the original `READY.json`. The new directory contains `DERIVED.json`:
 
 - `derivedFrom.snapshotDigest` — canonical digest of the original file list
 - `derivedFrom.manifestDigest` — the original `READY.json` digest field, when present
@@ -95,7 +95,7 @@ AMC_TARGET=production node scripts/projects.mjs approve --store remote --project
 AMC_TARGET=production node scripts/projects.mjs publish --store remote --project project-id --submission submission-id --digest snapshotDigest
 ```
 
-`seal` stores bytes at `projects/{projectId}/snap/{digest}/{mediaId}` and does not move the publication pointer. `publish` requires an approval for that project, submission, and digest. Repeating it is a no-op. A different digest is an error. `put-project` and `put-media` are not this path.
+`seal` stores bytes at `projects/{projectId}/snap/{digest}/{mediaId}` and writes the snapshot and its file list in one transaction. `publish` only moves the pointer after approval. The live page and every file are read from that pointer's snapshot. A media id that is not in the snapshot is not served, including one left behind by an older snapshot. Repeating a publish is a no-op. `register-project` does not replace an existing presentation. `put-project` does not replace a published one.
 
 Rollback restores an earlier sealed snapshot. It needs its own approval (`--operation rollback`) and the same digest. It does not restore a revoked or rotated code. Deleting the Drive folder does not unpublish.
 

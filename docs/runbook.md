@@ -28,8 +28,8 @@ The database, private Blob store, canary, and both peppers already exist. `DATA_
 2. Blob store `store_Ce6NEE2VP8BkMGv8` is private and connected to this project. On Vercel, each request asks for a fresh OIDC token. A laptop uses `BLOB_READ_WRITE_TOKEN` in `.env.local` for that same store. An inherited `VERCEL_OIDC_TOKEN` is not used for the laptop unless `BLOB_AUTH=oidc` is set on purpose.
 3. The private canary at `projects/_access/private-canary` matches `BLOB_PRIVATE_CANARY_SHA256`. The hash stays out of git. Sessions stay closed until a private read matches.
 4. Neon database `lucky-pond-84293267` (`aws-us-east-1`, Free). `DATABASE_URL` is already on production and preview. Apply the reviewed statements in `db/schema.sql` before enabling the stores. This repository does not apply them.
-5. `CODE_PEPPER` is a different value on production and preview. Both environments currently share the one database. Live import, revoke, rotate, seal, and publish must use the production pepper. Do not run those commands with the preview pepper.
-6. Leave `DATA_STORE` and `MEDIA_STORE` unset on Vercel until activation. The operator CLI sets them in its own process when `AMC_TARGET=production`. That does not turn the website on.
+5. `CODE_PEPPER` differs by environment. Preview must not also have the production database URL, `BLOB_STORE_ID`, or a Blob token. Hosted preview is refused even if those values are present. Remove them from the Vercel Preview environment; leave Production as it is. This repository does not change those variables.
+6. Leave `DATA_STORE` and `MEDIA_STORE` unset on Vercel until activation. Set them on production only, after `db/schema.sql` is applied. The operator CLI sets them in its own process and refuses `VERCEL_ENV=preview`.
 
 `npm start` does not use these services. It serves the public pages and the fictional demo. Hosted `/api/access` stays 503 while the two store variables are unset.
 
@@ -55,7 +55,7 @@ AMC_TARGET=production node scripts/projects.mjs rotate-code --store remote --pro
 `fixtures/demo/` and `lib/demo-fixture.js` are a labeled fake project for tests and screenshots. The fixture code is non-secret and is published in that module on purpose.
 
 ```bash
-node scripts/projects.mjs seed-demo --store remote
+node scripts/projects.mjs seed-demo --store memory
 ```
 
 Set `DEMO_FIXTURE=1` only on a preview where that known code should work. `seed-demo` refuses `VERCEL_ENV=production` and `AMC_TARGET=production`. Do not set `DEMO_FIXTURE` on production. The demo must not be described as Allison's work.

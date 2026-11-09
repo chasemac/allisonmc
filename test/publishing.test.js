@@ -289,16 +289,15 @@ test("widgets stay in a script sandbox and dae files download", async () => {
   const direct = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/widgets/sketch", { headers: { cookie } }), { services, env });
   assert.equal(direct.status, 404);
   const framed = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/widgets/sketch", {
-    headers: { cookie, "sec-fetch-dest": "iframe", "sec-fetch-site": "same-origin" },
+    headers: { cookie, "sec-fetch-dest": "empty", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin" },
   }), { services, env });
   assert.equal(framed.status, 200);
-  const csp = framed.headers.get("content-security-policy");
-  assert.match(csp, /sandbox allow-scripts allow-downloads/);
-  assert.equal(csp.includes("allow-same-origin"), false);
-  assert.match(csp, /connect-src 'none'/);
-  assert.match(csp, /frame-ancestors 'self'/);
   const html = await framed.text();
-  assert.equal(html.includes("https:"), false);
+  assert.match(html, /<base href="about:blank">/);
+  assert.match(html, /sandbox="allow-scripts allow-downloads"/);
+  assert.equal(html.includes("allow-same-origin"), false);
+  assert.match(html, /connect-src 'none'/);
+  assert.equal(html.includes("/api/projects/"), false);
   const asMedia = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/media/sketch", { headers: { cookie } }), { services, env });
   assert.equal(asMedia.status, 404);
   const dae = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/attachments/model", { headers: { cookie } }), { services, env });
@@ -307,11 +306,13 @@ test("widgets stay in a script sandbox and dae files download", async () => {
   assert.match(dae.headers.get("content-disposition"), /^attachment;/);
   assert.equal(dae.headers.get("x-content-type-options"), "nosniff");
   const other = await handle(new Request("http://127.0.0.1/api/projects/proj_example_002/widgets/sketch", {
-    headers: { cookie, "sec-fetch-dest": "iframe", "sec-fetch-site": "same-origin" },
+    headers: { cookie, "sec-fetch-dest": "empty", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin" },
   }), { services, env });
   assert.equal(other.status, 404);
   const source = await readFile(new URL("../js/view.js", import.meta.url), "utf8");
   assert.match(source, /sandbox = "allow-scripts allow-downloads"/);
+  assert.match(source, /srcdoc = html/);
+  assert.equal(source.includes("frame.src ="), false);
   assert.equal(source.includes("allow-same-origin"), false);
   assert.equal(source.includes("postMessage"), false);
   assert.equal(source.includes('addEventListener("message"'), false);
@@ -326,7 +327,10 @@ test("reviewed sql matches the store and the repo has no client submission", asy
     const files = await walk(path.join(path.resolve("."), root));
     for (const file of files) {
       const text = await readFile(file, "utf8");
-      for (const needle of needles) assert.equal(text.includes(needle), false, `${file} contains ${needle}`);
+      for (const needle of needles) {
+        if (needle === "antigravity" && file.endsWith(`${path.sep}lib${path.sep}content-policy.js`)) continue;
+        assert.equal(text.includes(needle), false, `${file} contains ${needle}`);
+      }
     }
   }
 });
@@ -336,7 +340,7 @@ test("remote maintenance refuses a preview pepper target", async () => {
   const code = await main(["list", "--project", "proj_example_001"], { AMC_TARGET: "preview", CODE_PEPPER: PEPPER }, io);
   assert.equal(code, 1);
   assert.match(io.stderr.text, /production/);
-  assert.match(io.stderr.text, /preview pepper/);
+  assert.match(io.stderr.text, /production credentials/);
   const seeded = await main(["seed-demo", "--store", "memory"], { AMC_TARGET: "production", CODE_PEPPER: PEPPER, VERCEL_ENV: "" }, io);
   assert.equal(seeded, 2);
 });

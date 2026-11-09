@@ -119,7 +119,14 @@
           frame.sandbox = "allow-scripts allow-downloads";
           frame.referrerPolicy = "no-referrer";
           frame.title = typeof block.title === "string" ? block.title : "Interactive view";
-          frame.src = `/api/projects/${presentation.id}/widgets/${block.mediaId}`;
+          const widgetUrl = `/api/projects/${presentation.id}/widgets/${block.mediaId}`;
+          Promise.resolve()
+            .then(() => fetch(widgetUrl, { credentials: "same-origin", headers: { accept: "text/html" } }))
+            .then((response) => (response.ok ? response.text() : ""))
+            .then((html) => {
+              if (html) frame.srcdoc = html;
+            })
+            .catch(() => {});
           article.append(frame);
         } else if (block.type === "text" && typeof block.text === "string") {
           article.append(el("p", "", block.text));

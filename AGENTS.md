@@ -22,7 +22,7 @@ Do not build or enable a Drive watcher, webhook, or poller. Do not put a client 
 
 `inspect`, `derive`, `seal`, `approve`, `publish`, and `rollback` are the publishing path. `derive` removes an unused external script into a new submission and leaves the original bytes alone. `seal` rejects HTML that still reaches the network. Publish requires an approval bound to the printed snapshot digest. Rollback does not restore codes.
 
-Share codes may be plaintext in the shared Drive access file. Import them with `import-codes` using the production `CODE_PEPPER`. Preview and production peppers are different and the database is shared, so the preview pepper must not write codes. The server still stores only an HMAC. `DATA_STORE` and `MEDIA_STORE` stay unset on Vercel until the reviewed SQL is applied and a real project is ready.
+Share codes may be plaintext in the shared Drive access file. Import them with `import-codes` using production credentials. Preview must not have the production database URL or Blob credentials. Hosted preview is fail-closed, and the CLI refuses `VERCEL_ENV=preview` before it connects. `AMC_TARGET` is only the operator's shell flag. The server still stores only an HMAC. `DATA_STORE` and `MEDIA_STORE` stay unset on Vercel until the reviewed SQL is applied and a real project is ready. Do not remove or edit those Vercel variables from an agent turn.
 
 ## Secrets and hosting
 
