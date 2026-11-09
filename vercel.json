@@ -6,6 +6,7 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/handler" },
     { "source": "/musings", "destination": "/musings.html" },
     { "source": "/musings/", "destination": "/musings.html" },
     { "source": "/view", "destination": "/view.html" },
