@@ -383,13 +383,93 @@ dialog button {
   margin-top: 0.5rem;
 }
 
-.section-nav ul {
+.project-bar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.4rem;
-  list-style: none;
-  margin: 1.5rem 0;
-  padding: 0;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.4rem 0 0.8rem;
+  padding: 0.45rem 0;
+  background: var(--paper);
+}
+
+.tablist {
+  display: flex;
+  flex: 1;
+  gap: 0.35rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.project-tab,
+.project-tab:hover,
+.project-tab:focus,
+.project-tab:active {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.project-tab[aria-selected="true"],
+.project-tab[aria-selected="true"]:hover,
+.project-tab[aria-selected="true"]:focus,
+.project-tab[aria-selected="true"]:active {
+  background: var(--cypress);
+  border-color: var(--cypress);
+  color: #f6f1e8;
+}
+
+.project-tab:focus-visible,
+#leave-project:focus-visible {
+  outline: 2px solid var(--cypress);
+  outline-offset: 2px;
+}
+
+#leave-project {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
+.fold {
+  border-top: 1px solid var(--line);
+}
+
+.fold summary {
+  padding: 0.85rem 0.1rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.fold-body {
+  padding: 0 0 0.9rem;
+}
+
+a.open-widget,
+a.open-widget:hover,
+a.open-widget:focus,
+a.open-widget:focus-visible,
+a.open-widget:active {
+  display: inline-block;
+  margin: 0 0 0.85rem;
+  padding: 0.8rem 1rem;
+  background: var(--cypress);
+  color: #f6f1e8;
+  text-decoration: none;
+  font-family: var(--sans);
 }
 
 .project-section {
@@ -443,13 +523,6 @@ dialog button {
 
 .attachment {
   margin: 0.4rem 0;
-}
-
-.widget-frame {
-  width: 100%;
-  height: 32rem;
-  border: 1px solid var(--line);
-  background: #fff;
 }
 
 dialog {
@@ -541,6 +614,16 @@ dialog img {
 
   .gallery {
     grid-template-columns: 1fr;
+  }
+
+  a.open-widget,
+  a.open-widget:hover,
+  a.open-widget:focus,
+  a.open-widget:active {
+    display: block;
+    text-align: center;
+    background: var(--cypress);
+    color: #f6f1e8;
   }
 }
 

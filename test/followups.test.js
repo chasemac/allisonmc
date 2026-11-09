@@ -26,7 +26,7 @@ test("multi-segment api paths stay on the single function", async () => {
   assert.match(source, /return handle\(request\)/);
   for (const pathname of [
     "/api/projects/demo-northglass/media/plan",
-    "/api/projects/demo-northglass/widgets/sketch",
+    "/api/projects/demo-northglass/widgets/sketch/open",
   ]) {
     assert.equal(new RegExp(`^${config.rewrites[0].source}$`).test(pathname), true);
     const segments = pathname.slice("/api/".length).split("/");
@@ -36,7 +36,7 @@ test("multi-segment api paths stay on the single function", async () => {
   await seedDemo(services);
   for (const pathname of [
     "/api/projects/demo-northglass/media/plan",
-    "/api/projects/demo-northglass/widgets/sketch",
+    "/api/projects/demo-northglass/widgets/sketch/open",
   ]) {
     const response = await handle(new Request(`http://127.0.0.1${pathname}`), { services, env });
     assert.equal(response.status, 401);

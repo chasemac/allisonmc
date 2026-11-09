@@ -57,13 +57,13 @@ Every asset path must exist, and every file except `READY.json` and `DERIVED.jso
 
 A validated handoff of 31 files is `content.json`, one HTML widget, two DAE files, four PDFs, 21 PNGs, and two JPEGs. The roles on those images come from `content.json`. This repository does not contain that handoff, and this branch does not publish it.
 
-The viewer adds a details section and a notes section when those fields are present, then one section per role that has files. Generated section ids are `meta-details`, `meta-notes`, and `role-<role>`. A content section must not use those ids. The mapped page is `fictional: false`. Text is rendered as text. The widget is an iframe. DAE and PDF entries are authenticated downloads.
+The viewer adds a details section and a notes section when those fields are present, then one section per role that has files. Generated section ids are `meta-details`, `meta-notes`, and `role-<role>`. A content section must not use those ids. The mapped page is `fictional: false`. Text is rendered as text. A widget is a link to its full page, not an embedded frame. DAE and PDF entries are authenticated downloads.
 
 ## Widget and the derived snapshot
 
-`seal` rejects an HTML file that is not self-contained. An `https` script, stylesheet link, network call, nested frame, or any `http` URL fails that check. The check is not a JavaScript sanitizer. A widget is shown from a same-origin fetch, then as a nested `srcdoc` document whose base URL is `about:blank` and whose sandbox is exactly `allow-scripts allow-downloads`. Its location does not include the project path. `connect-src 'none'` blocks fetches. The frame can still read the public site origin from `ancestorOrigins`. Do not widen the sandbox or the policy to make a remote script load.
+`seal` rejects an HTML file that is not self-contained, except a script whose origin is `https://www.gstatic.com`. Any other script host, stylesheet link, network call, nested frame, or `http` URL fails that check. The check is not a JavaScript sanitizer.
 
-`derive` removes only the one approved unused Tailwind script named by `APPROVED_UNUSED_SCRIPT`. Any other external script, including one the page needs, is left in place and the command fails. It writes a new directory and a new submission id. It refuses a symlink output, does not follow links into the original, and does not change the original directory or the original `READY.json`. The new directory contains `DERIVED.json`:
+A script loaded from `https://www.gstatic.com` can be sealed and published as stored. `derive` is optional for that file. `derive` removes only the one approved unused Tailwind script named by `APPROVED_UNUSED_SCRIPT`. Any other external script, including one the page needs, is left in place and the command fails. It writes a new directory and a new submission id. It refuses a symlink output, does not follow links into the original, and does not change the original directory or the original `READY.json`. The new directory contains `DERIVED.json`:
 
 - `derivedFrom.snapshotDigest` — canonical digest of the original file list
 - `derivedFrom.manifestDigest` — the original `READY.json` digest field, when present
@@ -73,7 +73,7 @@ The viewer adds a details section and a notes section when those fields are pres
 
 If anything external remains after that one strip, `derive` fails and nothing is sealed. Inspect the derived directory and approve `outputDigest` / `snapshotDigest` from that inspection. The original snapshot stays unsealed.
 
-A widget is served only for a session on that project, only when `Sec-Fetch-Dest` is `iframe` and `Sec-Fetch-Site` is `same-origin`, and only when the HTML still passes the check. The iframe is `sandbox="allow-scripts allow-downloads"` with `referrerpolicy="no-referrer"`. It is not `allow-same-origin`. `/media/` does not return HTML. DAE files use `model/vnd.collada+xml`, `Content-Disposition: attachment`, and `nosniff`. A DAE with a doctype, entity, or external `init_from` is rejected. A relative `init_from` must name a file in the submission. The parent page does not listen for `postMessage`.
+The project page links to `GET /api/projects/{projectId}/widgets/{mediaId}/open`. That route requires the project session and returns the stored HTML unchanged. The response CSP is a sandbox with `allow-scripts`, `allow-downloads`, and `allow-popups`, `script-src` limited to inline scripts and `https://www.gstatic.com`, and `connect-src 'none'`. The sandbox origin is opaque, so the file cannot read the session cookie or call this API. `/media/` does not return HTML. DAE files use `model/vnd.collada+xml`, `Content-Disposition: attachment`, and `nosniff`. A DAE with a doctype, entity, or external `init_from` is rejected. A relative `init_from` must name a file in the submission. The parent page does not listen for `postMessage`.
 
 Page responses keep `X-Frame-Options: DENY` and `frame-ancestors 'none'`. Those headers are not applied to `/api/`, so the widget response can be framed by this origin only.
 

@@ -15,6 +15,75 @@
       ]
     },
     {
+      "id": "option-a",
+      "title": "Fictional option A",
+      "blocks": [
+        { "type": "text", "text": "This is a long fictional note for the tabbed viewer. It describes an invented reading room and not a real client, building, or measurement. The text is repeated so the section can collapse inside the Sections tab instead of stretching the page. Nothing here is a commission, a quote, or a personal fact." }
+      ]
+    },
+    {
+      "id": "option-b",
+      "title": "Fictional option B",
+      "blocks": [
+        { "type": "text", "text": "Another invented paragraph for the heavy demo. It talks about a glazed wall, a simple roof, and a window detail that exist only in this fixture. Use it to check that several long sections stay inside one tab and that only one tab panel is open. This is not Allison McElroy's work." }
+      ]
+    },
+    {
+      "id": "option-c",
+      "title": "Fictional option C",
+      "blocks": [
+        { "type": "text", "text": "A third fictional section with enough sentences to fold. The room, the mullion, and the shelf are made up for layout testing. Opening this section should not reveal the drawings or the model file. The download and the full viewer stay on their own tab." }
+      ]
+    },
+    {
+      "id": "option-d",
+      "title": "Fictional option D",
+      "blocks": [
+        { "type": "text", "text": "Fourth invented section. It is here so a phone-width page can show a short tab bar instead of a long list of links. The words are filler about paper, ink, and spacing. No address, client, or real dimension belongs in this paragraph." }
+      ]
+    },
+    {
+      "id": "option-e",
+      "title": "Fictional option E",
+      "blocks": [
+        { "type": "text", "text": "Fifth invented section for the same reason. A reader can open one heading at a time. The other headings stay collapsed. This keeps a content-heavy fictional project from becoming one continuous scroll of every drawing and file." }
+      ]
+    },
+    {
+      "id": "option-f",
+      "title": "Fictional option F",
+      "blocks": [
+        { "type": "text", "text": "Sixth invented section. It mentions a fictional bench, a fictional lamp, and a fictional aisle only as layout text. Those objects are not part of a built project. The tab control should still fit on one horizontal row that can scroll." }
+      ]
+    },
+    {
+      "id": "option-g",
+      "title": "Fictional option G",
+      "blocks": [
+        { "type": "text", "text": "Seventh invented section. Collapsing it leaves the heading visible and hides this paragraph. Keyboard arrows on the tab bar should move between Overview, Sections, Drawings, and Model and files without leaving the page." }
+      ]
+    },
+    {
+      "id": "option-h",
+      "title": "Fictional option H",
+      "blocks": [
+        { "type": "text", "text": "Eighth invented section. Together with the others, the Sections tab stands in for a document that has many long parts. The drawings remain a separate tab, and the model link remains a separate tab. This fixture is not a client submission." }
+      ]
+    },
+    {
+      "id": "elevations",
+      "title": "Fictional elevations",
+      "blocks": [
+        {
+          "type": "gallery",
+          "images": [
+            { "mediaId": "plan", "alt": "Fictional demo plan diagram of a rectangular room", "caption": "Repeated fictional plan" },
+            { "mediaId": "section", "alt": "Fictional demo section diagram with a simple roof", "caption": "Repeated fictional section" }
+          ]
+        }
+      ]
+    },
+    {
       "id": "drawings",
       "title": "Drawings",
       "blocks": [

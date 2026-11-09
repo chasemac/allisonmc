@@ -74,6 +74,68 @@
     return null;
   }
 
+  const TAB_DEFS = [
+    { id: "overview", label: "Overview" },
+    { id: "sections", label: "Sections" },
+    { id: "drawings", label: "Drawings" },
+    { id: "files", label: "Model & files" },
+  ];
+
+  function pageHash() {
+    try {
+      const raw = String(globalThis.location && location.hash ? location.hash : "").replace(/^#/, "");
+      return /^[A-Za-z0-9_-]{1,80}$/.test(raw) ? raw : "";
+    } catch {
+      return "";
+    }
+  }
+
+  function sectionTab(section) {
+    const id = section.id || "";
+    const blocks = Array.isArray(section.blocks) ? section.blocks : [];
+    if (id === "meta-details" || id === "meta-notes" || id === "overview") return "overview";
+    if (id.indexOf("role-") === 0) {
+      const role = id.slice(5);
+      if (["hero", "3d-preview", "page-preview", "plan-sheet", "proposal-preview", "punchlist-preview", "reference-photo", "gallery"].indexOf(role) >= 0) {
+        return "drawings";
+      }
+      return "files";
+    }
+    const types = blocks.map((block) => (block && block.type) || "");
+    if (types.indexOf("widget") >= 0) return "files";
+    if (types.indexOf("gallery") >= 0) return "drawings";
+    if (types.indexOf("attachment") >= 0) return "files";
+    const text = blocks.map((block) => (block && block.type === "text" ? block.text : "")).join("");
+    return text.length > 180 ? "sections" : "overview";
+  }
+
+  function appendBlocks(parent, section, presentation) {
+    for (const block of section.blocks || []) {
+      if (!block || typeof block !== "object") continue;
+      if (block.type === "widget" && safeId(block.mediaId, mediaPattern) && safeId(presentation.id, projectPattern)) {
+        const open = el(
+          "a",
+          "open-widget",
+          presentation.fictional === true
+            ? `Open ${typeof block.title === "string" ? block.title : "viewer"}`
+            : "Open 3D Kitchen Studio",
+        );
+        open.href = `/api/projects/${presentation.id}/widgets/${block.mediaId}/open`;
+        open.target = "_blank";
+        open.rel = "noopener noreferrer";
+        parent.append(open);
+      } else if (block.type === "text" && typeof block.text === "string") {
+        parent.append(el("p", "", block.text));
+      } else if (block.type === "gallery" && Array.isArray(block.images)) {
+        parent.append(renderGallery(presentation.id, block.images));
+      } else if (block.type === "attachment") {
+        const attachment = (presentation.attachments || []).find((entry) => entry && entry.id === block.attachmentId);
+        const node = renderAttachment(presentation.id, attachment);
+        if (node) parent.append(node);
+      }
+    }
+  }
+
   function renderProject(root, presentation) {
     root.textContent = "";
     if (!presentation || typeof presentation !== "object") return root;
@@ -84,62 +146,122 @@
     if (title && typeof presentation.title === "string") title.textContent = presentation.title;
     const kicker = document.getElementById("page-kicker");
     if (kicker) kicker.textContent = presentation.fictional === true ? "Fictional demo" : "Project";
-    if (typeof presentation.summary === "string") root.append(el("p", "summary", presentation.summary));
 
-    const nav = document.createElement("nav");
-    nav.className = "section-nav";
-    nav.setAttribute("aria-label", "Project sections");
-    const list = el("ul");
+    const grouped = { overview: [], sections: [], drawings: [], files: [] };
     for (const section of presentation.sections || []) {
       if (!section || !safeId(section.id, sectionPattern)) continue;
-      const item = el("li");
-      const link = el("a", "", String(section.title || "Section"));
-      link.setAttribute("href", `#s-${section.id}`);
-      item.append(link);
-      list.append(item);
+      grouped[sectionTab(section)].push(section);
     }
-    nav.append(list);
-    root.append(nav);
+    const tabs = TAB_DEFS.filter((tab) => tab.id === "overview" || grouped[tab.id].length);
+    const panels = {};
+    const buttons = [];
 
+    function showTab(id, writeHash) {
+      const known = tabs.some((tab) => tab.id === id);
+      const next = known ? id : tabs[0].id;
+      for (const button of buttons) {
+        const on = button.tabId === next;
+        button.setAttribute("aria-selected", on ? "true" : "false");
+        button.tabIndex = on ? 0 : -1;
+      }
+      for (const tab of tabs) panels[tab.id].hidden = tab.id !== next;
+      if (writeHash) {
+        try {
+          const hash = "#" + next;
+          if (globalThis.history && history.replaceState && location.hash !== hash) history.replaceState(null, "", hash);
+        } catch {
+          /* The hash is only a tab name. A missing location must not break viewing. */
+        }
+      }
+      return next;
+    }
+
+    const bar = el("div", "project-bar");
+    const tablist = el("div", "tablist");
+    tablist.setAttribute("role", "tablist");
+    tablist.setAttribute("aria-label", "Project");
+    for (const tab of tabs) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "project-tab";
+      button.tabId = tab.id;
+      button.id = "tab-" + tab.id;
+      button.setAttribute("role", "tab");
+      button.setAttribute("aria-controls", "panel-" + tab.id);
+      button.textContent = tab.label;
+      button.addEventListener("click", () => showTab(tab.id, true));
+      tablist.append(button);
+      buttons.push(button);
+      const panel = el("div", "tab-panel");
+      panel.id = "panel-" + tab.id;
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", button.id);
+      panels[tab.id] = panel;
+    }
+    tablist.addEventListener("keydown", (event) => {
+      const names = ["ArrowRight", "ArrowLeft", "Home", "End"];
+      if (names.indexOf(event.key) < 0) return;
+      let index = buttons.indexOf(document.activeElement);
+      if (index < 0) index = buttons.findIndex((button) => button.getAttribute("aria-selected") === "true");
+      if (event.key === "ArrowRight") index = (index + 1) % buttons.length;
+      else if (event.key === "ArrowLeft") index = (index - 1 + buttons.length) % buttons.length;
+      else if (event.key === "Home") index = 0;
+      else index = buttons.length - 1;
+      event.preventDefault();
+      buttons[index].focus();
+      showTab(buttons[index].tabId, true);
+    });
+    bar.append(tablist);
     const leave = el("button", "text-button", "Leave project");
     leave.type = "button";
     leave.id = "leave-project";
-    root.append(leave);
+    bar.append(leave);
+    root.append(bar);
 
-    for (const section of presentation.sections || []) {
-      if (!section || !safeId(section.id, sectionPattern)) continue;
-      const article = el("article", "project-section");
-      article.id = `s-${section.id}`;
-      article.append(el("h2", "", String(section.title || "")));
-      for (const block of section.blocks || []) {
-        if (!block || typeof block !== "object") continue;
-        if (block.type === "widget" && safeId(block.mediaId, mediaPattern) && safeId(presentation.id, projectPattern)) {
-          const frame = document.createElement("iframe");
-          frame.className = "widget-frame";
-          frame.sandbox = "allow-scripts allow-downloads";
-          frame.referrerPolicy = "no-referrer";
-          frame.title = typeof block.title === "string" ? block.title : "Interactive view";
-          const widgetUrl = `/api/projects/${presentation.id}/widgets/${block.mediaId}`;
-          Promise.resolve()
-            .then(() => fetch(widgetUrl, { credentials: "same-origin", headers: { accept: "text/html" } }))
-            .then((response) => (response.ok ? response.text() : ""))
-            .then((html) => {
-              if (html) frame.srcdoc = html;
-            })
-            .catch(() => {});
-          article.append(frame);
-        } else if (block.type === "text" && typeof block.text === "string") {
-          article.append(el("p", "", block.text));
-        } else if (block.type === "gallery" && Array.isArray(block.images)) {
-          article.append(renderGallery(presentation.id, block.images));
-        } else if (block.type === "attachment") {
-          const attachment = (presentation.attachments || []).find((entry) => entry && entry.id === block.attachmentId);
-          const node = renderAttachment(presentation.id, attachment);
-          if (node) article.append(node);
+    if (typeof presentation.summary === "string") panels.overview.append(el("p", "summary", presentation.summary));
+    for (const name of ["overview", "drawings", "files"]) {
+      for (const section of grouped[name]) {
+        const article = el("article", "project-section");
+        article.id = "s-" + section.id;
+        if (section.title) article.append(el("h2", "", String(section.title)));
+        appendBlocks(article, section, presentation);
+        panels[name].append(article);
+      }
+    }
+    grouped.sections.forEach((section, index) => {
+      const details = document.createElement("details");
+      details.className = "fold";
+      details.id = "s-" + section.id;
+      if (index === 0) details.open = true;
+      const summary = document.createElement("summary");
+      summary.textContent = String(section.title || "Section");
+      details.append(summary);
+      const body = el("div", "fold-body");
+      appendBlocks(body, section, presentation);
+      details.append(body);
+      panels.sections.append(details);
+    });
+    for (const tab of tabs) root.append(panels[tab.id]);
+
+    function applyHash() {
+      const hash = pageHash();
+      if (tabs.some((tab) => tab.id === hash)) {
+        showTab(hash, false);
+        return;
+      }
+      if (hash.indexOf("s-") === 0) {
+        for (const tab of tabs) {
+          const node = panels[tab.id].querySelector ? panels[tab.id].querySelector("#" + hash) : null;
+          if (!node) continue;
+          showTab(tab.id, false);
+          if ("open" in node) node.open = true;
+          return;
         }
       }
-      root.append(article);
+      showTab(tabs[0].id, false);
     }
+    globalThis.__amcApplyHash = applyHash;
+    applyHash();
     return root;
   }
 
@@ -279,6 +401,13 @@
     } catch {
       showError("Project access is unavailable right now.");
     }
+  }
+
+  if (typeof globalThis.addEventListener === "function" && !globalThis.__amcHashBound) {
+    globalThis.__amcHashBound = true;
+    globalThis.addEventListener("hashchange", () => {
+      if (typeof globalThis.__amcApplyHash === "function") globalThis.__amcApplyHash();
+    });
   }
 
   const api = { renderProject, isHttps };
