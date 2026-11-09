@@ -287,18 +287,12 @@ test("widgets stay in a script sandbox and dae files download", async () => {
   await seedDemo(services);
   const opened = await handle(jsonRequest(TEST_FIXTURE_CODE), { services, env });
   const cookie = cookieHeader(opened);
-  const direct = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/widgets/sketch", { headers: { cookie } }), { services, env });
-  assert.equal(direct.status, 404);
-  const framed = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/widgets/sketch", {
-    headers: { cookie, "sec-fetch-dest": "empty", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin" },
-  }), { services, env });
-  assert.equal(framed.status, 200);
-  const html = await framed.text();
-  assert.match(html, /<base href="about:blank">/);
-  assert.match(html, /sandbox="allow-scripts allow-downloads"/);
-  assert.equal(html.includes("allow-same-origin"), false);
-  assert.match(html, /connect-src 'none'/);
-  assert.equal(html.includes("/api/projects/"), false);
+  const openedWidget = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/widgets/sketch/open", { headers: { cookie } }), { services, env });
+  assert.equal(openedWidget.status, 200);
+  assert.match(openedWidget.headers.get("content-security-policy"), /connect-src 'none'/);
+  assert.equal(openedWidget.headers.get("content-security-policy").includes("allow-same-origin"), false);
+  const embedded = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/widgets/sketch", { headers: { cookie } }), { services, env });
+  assert.equal(embedded.status, 404);
   const asMedia = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/media/sketch", { headers: { cookie } }), { services, env });
   assert.equal(asMedia.status, 404);
   const dae = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/attachments/model", { headers: { cookie } }), { services, env });
@@ -306,17 +300,14 @@ test("widgets stay in a script sandbox and dae files download", async () => {
   assert.equal(dae.headers.get("content-type"), "model/vnd.collada+xml");
   assert.match(dae.headers.get("content-disposition"), /^attachment;/);
   assert.equal(dae.headers.get("x-content-type-options"), "nosniff");
-  const other = await handle(new Request("http://127.0.0.1/api/projects/proj_example_002/widgets/sketch", {
-    headers: { cookie, "sec-fetch-dest": "empty", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin" },
-  }), { services, env });
+  const other = await handle(new Request("http://127.0.0.1/api/projects/proj_example_002/widgets/sketch/open", { headers: { cookie } }), { services, env });
   assert.equal(other.status, 404);
   const source = await readFile(new URL("../js/view.js", import.meta.url), "utf8");
-  assert.match(source, /sandbox = "allow-scripts allow-downloads"/);
-  assert.match(source, /srcdoc = html/);
-  assert.equal(source.includes("frame.src ="), false);
-  assert.equal(source.includes("allow-same-origin"), false);
+  assert.match(source, /Open 3D Kitchen Studio/);
+  assert.match(source, /\/widgets\/\$\{block\.mediaId\}\/open/);
+  assert.equal(source.includes("srcdoc"), false);
+  assert.equal(source.includes("iframe"), false);
   assert.equal(source.includes("postMessage"), false);
-  assert.equal(source.includes('addEventListener("message"'), false);
 });
 
 test("reviewed sql matches the store and the repo has no client submission", async () => {

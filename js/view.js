@@ -118,27 +118,13 @@
             "a",
             "open-widget",
             presentation.fictional === true
-              ? `Open ${typeof block.title === "string" ? block.title : "viewer"} (full screen)`
-              : "Open 3D Kitchen Studio (full screen)",
+              ? `Open ${typeof block.title === "string" ? block.title : "viewer"}`
+              : "Open 3D Kitchen Studio",
           );
           open.href = `/api/projects/${presentation.id}/widgets/${block.mediaId}/open`;
           open.target = "_blank";
           open.rel = "noopener noreferrer";
           article.append(open);
-          const frame = document.createElement("iframe");
-          frame.className = "widget-frame";
-          frame.sandbox = "allow-scripts allow-downloads";
-          frame.referrerPolicy = "no-referrer";
-          frame.title = typeof block.title === "string" ? block.title : "Interactive view";
-          const widgetUrl = `/api/projects/${presentation.id}/widgets/${block.mediaId}`;
-          Promise.resolve()
-            .then(() => fetch(widgetUrl, { credentials: "same-origin", headers: { accept: "text/html" } }))
-            .then((response) => (response.ok ? response.text() : ""))
-            .then((html) => {
-              if (html) frame.srcdoc = html;
-            })
-            .catch(() => {});
-          article.append(frame);
         } else if (block.type === "text" && typeof block.text === "string") {
           article.append(el("p", "", block.text));
         } else if (block.type === "gallery" && Array.isArray(block.images)) {

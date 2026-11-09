@@ -6,7 +6,7 @@ Operators with the developer CLI can seed the fictional demo and maintain test d
 
 ## What a client sees
 
-`/view` asks for a code. A valid code sets an HttpOnly, SameSite=Strict session cookie scoped to one project. The page then shows that project's sections, a gallery with a lightbox, a sandboxed widget when the project has one, and any approved files or `https` links. Text is inserted as text, not HTML. The widget iframe is `sandbox="allow-scripts allow-downloads"` and does not get the parent origin. Leaving the project revokes that session.
+`/view` asks for a code. A valid code sets an HttpOnly, SameSite=Strict session cookie scoped to one project. The page then shows that project's sections, a gallery with a lightbox, a link that opens a widget in a new tab when the project has one, and any approved files or `https` links. Text is inserted as text, not HTML. The widget page is not embedded. Its response CSP sandboxes it so it does not share the parent origin. Leaving the project revokes that session.
 
 The session lasts at most 12 hours and never longer than the code. Every project, media, widget, and file request checks the session, the code expiry, and the revocation flag. A session for one project gets a not-found response for another project's id.
 
@@ -16,7 +16,7 @@ Rate limiting is an atomic Postgres upsert shared by every function instance. Th
 
 Media bytes live in a private Blob store under `projects/{projectId}/media/{mediaId}`. The browser never receives a Blob URL. The function streams the object only after the session check. Before a session cookie is set, the server reads a provisioned canary with `access: "private"` and checks its SHA-256. A store that merely answers, including a reachable public store, does not pass. A missing canary, a hash mismatch, the wrong store, or an auth failure grants no session. A later media error on an existing session also fails closed and returns no bytes.
 
-The upload check for images and PDFs is a short signature prefix, not a full file parse and not a sanitizer. JPEG, PNG, WebP, and PDF prefixes are accepted. SVG, script, Markdown, and MDX text do not match those prefixes and are refused. A matching prefix does not prove the rest of the file is harmless. Images are served with nosniff and a locked content security policy. PDFs and DAE files are downloaded rather than shown as active page content. A self-contained HTML widget is a separate checked path: it is not served from `/media/`, and it loads only inside the sandboxed iframe described above. Markdown is not rendered.
+The upload check for images and PDFs is a short signature prefix, not a full file parse and not a sanitizer. JPEG, PNG, WebP, and PDF prefixes are accepted. SVG, script, Markdown, and MDX text do not match those prefixes and are refused. A matching prefix does not prove the rest of the file is harmless. Images are served with nosniff and a locked content security policy. PDFs and DAE files are downloaded rather than shown as active page content. A widget HTML file is a separate checked path: it is not served from `/media/`, and it opens only from the session-gated widget link. Markdown is not rendered.
 
 `npm test` uses the in-memory store and a stub Blob client. It does not connect to Neon or Vercel Blob, and it is not a hosted check.
 

@@ -57,6 +57,8 @@ test("the full-screen widget route serves the stored bytes behind the session", 
   }), { services, env });
   assert.equal(other.status, 404);
   const page = readFileSync("js/view.js", "utf8");
-  assert.match(page, /Open 3D Kitchen Studio \(full screen\)/);
+  assert.match(page, /Open 3D Kitchen Studio/);
+  assert.equal(page.includes("srcdoc"), false);
+  assert.equal(page.includes("iframe"), false);
   assert.match(page, /\/widgets\/\$\{block\.mediaId\}\/open/);
 });

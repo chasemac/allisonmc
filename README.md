@@ -31,7 +31,7 @@ After the first preview, confirm these URLs 404:
 
 ## Private projects
 
-Clients open one curated project with a code. There is no account, admin site, or comment thread. A project can include a self-contained widget in a sandboxed iframe. What the server does is in [docs/runbook.md](docs/runbook.md).
+Clients open one curated project with a code. There is no account, admin site, or comment thread. A project can link to its widget, which opens as its own sandboxed page. What the server does is in [docs/runbook.md](docs/runbook.md).
 
 Client files stay out of this repo. A maintainer publishes from a verified local snapshot with the commands in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md). `DATA_STORE` and `MEDIA_STORE` stay unset until that path is reviewed and a real project is ready, so hosted project access stays closed. Agent constraints are in [AGENTS.md](AGENTS.md).
 

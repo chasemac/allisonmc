@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { main } from "../lib/cli.js";
-import { colladaProblems, exactAssetReference, wrapWidgetDocument } from "../lib/content-policy.js";
+import { WIDGET_CSP, colladaProblems, exactAssetReference } from "../lib/content-policy.js";
 import { mediaPath } from "../lib/codes.js";
 import { approveSnapshot, canonicalDigest, deriveStrippedSnapshot, inspectSnapshot, publishSnapshot, sealSnapshot } from "../lib/ingest.js";
 import { MAX_MEDIA_BYTES } from "../lib/media-types.js";
@@ -98,11 +98,6 @@ test("widget containment does not depend on banning navigation syntax", async ()
   await sealSnapshot(services, inspected);
   await approveSnapshot(services, { projectId: box.projectId, submissionId: box.submissionId, digest: box.digest, operation: "publish" });
   await publishSnapshot(services, { projectId: box.projectId, submissionId: box.submissionId, digest: box.digest });
-  const wrapped = wrapWidgetDocument(NAV);
-  assert.match(wrapped, /<base href="about:blank">/);
-  assert.match(wrapped, /sandbox="allow-scripts allow-downloads"/);
-  assert.equal(wrapped.includes("allow-same-origin"), false);
-  assert.equal(wrapped.includes(box.projectId), false);
   const opened = await handle(new Request("http://127.0.0.1/api/access", {
     method: "POST",
     headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.70" },
@@ -117,16 +112,13 @@ test("widget containment does not depend on banning navigation syntax", async ()
     body: JSON.stringify({ code: "camp gate 2026" }),
   }), { services, env });
   const cookie = /amc_session=([^;]*)/.exec(session.headers.get("set-cookie"))[1];
-  const asDocument = await handle(new Request(`http://127.0.0.1/api/projects/${box.projectId}/widgets/viewer`, {
-    headers: { cookie: `amc_session=${cookie}`, "sec-fetch-dest": "iframe", "sec-fetch-site": "same-origin" },
-  }), { services, env });
-  assert.equal(asDocument.status, 404);
-  const fetched = await handle(new Request(`http://127.0.0.1/api/projects/${box.projectId}/widgets/viewer`, {
-    headers: { cookie: `amc_session=${cookie}`, "sec-fetch-dest": "empty", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin" },
+  const fetched = await handle(new Request(`http://127.0.0.1/api/projects/${box.projectId}/widgets/viewer/open`, {
+    headers: { cookie: `amc_session=${cookie}` },
   }), { services, env });
   assert.equal(fetched.status, 200);
+  assert.equal(fetched.headers.get("content-security-policy"), WIDGET_CSP);
   const body = await fetched.text();
-  assert.match(body, /about:blank/);
+  assert.equal(body, NAV);
   assert.equal(body.includes(box.projectId), false);
 });
 
