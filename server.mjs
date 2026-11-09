@@ -7,6 +7,7 @@ import { inspectSnapshot } from "./lib/ingest.js";
 import { handle } from "./lib/router.js";
 import { createMemoryServices } from "./lib/runtime.js";
 import { readPublicFile } from "./lib/static-public.js";
+import { BODY_TOO_LARGE, MAX_JSON_BYTES, forwardedClientHeaders, pageResponseHeaders, readLimitedBuffer } from "./lib/http.js";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const pepper = process.env.CODE_PEPPER || "local-demo-pepper-not-for-production";
@@ -52,15 +53,20 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || "/", "http://127.0.0.1");
     if (url.pathname.startsWith("/api/")) {
-      const chunks = [];
-      for await (const chunk of req) chunks.push(chunk);
-      const body = Buffer.concat(chunks);
-      const headers = new Headers();
-      for (const [key, value] of Object.entries(req.headers)) {
-        if (["host", "connection", "content-length", "transfer-encoding"].includes(key)) continue;
-        if (Array.isArray(value)) value.forEach((item) => headers.append(key, item));
-        else if (value) headers.set(key, value);
+      const body = await readLimitedBuffer(req, MAX_JSON_BYTES);
+      if (body === BODY_TOO_LARGE) {
+        res.writeHead(413, {
+          "content-type": "application/json; charset=utf-8",
+          "cache-control": "private, no-store",
+          "x-content-type-options": "nosniff",
+          "x-robots-tag": "noindex",
+          "referrer-policy": "no-referrer",
+        });
+        res.end(JSON.stringify({ error: "Request is too large." }));
+        req.destroy();
+        return;
       }
+      const headers = forwardedClientHeaders(req.headers, req.socket && req.socket.remoteAddress);
       const request = new Request(url.toString(), {
         method: req.method,
         headers,
@@ -80,20 +86,18 @@ const server = http.createServer(async (req, res) => {
     const file = await readPublicFile(root, url.pathname);
     if (!file) {
       const missing = await readPublicFile(root, "/404.html");
-      res.writeHead(404, { "content-type": "text/html; charset=utf-8", "x-content-type-options": "nosniff" });
+      res.writeHead(404, pageResponseHeaders("text/html; charset=utf-8"));
       res.end(missing ? missing.bytes : "Not found");
       return;
     }
-    res.writeHead(200, {
-      "content-type": file.contentType,
-      "x-content-type-options": "nosniff",
-      "referrer-policy": "no-referrer",
-      "content-security-policy":
-        "default-src 'self'; img-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'",
-    });
+    res.writeHead(200, pageResponseHeaders(file.contentType));
     res.end(file.bytes);
   } catch {
-    res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+    res.writeHead(500, {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "private, no-store",
+      "x-content-type-options": "nosniff",
+    });
     res.end("Unavailable");
   }
 });
