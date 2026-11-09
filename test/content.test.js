@@ -114,7 +114,7 @@ test("static output omits server code, secrets, and the fixture code", () => {
   assert.equal(blob.includes("CODE_PEPPER"), false);
   assert.equal(blob.includes("BLOB_READ_WRITE_TOKEN"), false);
   assert.equal(blob.includes("postgres://"), false);
-  const serverSource = ["api/[...path].js", "lib/router.js", "lib/runtime.js"].map((file) => readFileSync(file, "utf8")).join("\n");
+  const serverSource = ["api/handler.js", "lib/router.js", "lib/runtime.js"].map((file) => readFileSync(file, "utf8")).join("\n");
   assert.equal(serverSource.includes(TEST_FIXTURE_CODE), false);
   assert.equal(serverSource.includes("demo-fixture.js"), false);
 });
