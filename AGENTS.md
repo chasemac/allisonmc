@@ -84,11 +84,11 @@ You may edit the hosted widget HTML for a phone layout only when every existing 
 
 ## Content handoff
 
-Allison hands off work through the private Drive folder named Allison Site Inbox. She does not need the Vercel CLI. A maintainer copies a verified snapshot and runs the commands in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md). Editing Drive does not publish and does not activate a code. The folder name is not a project id.
+Allison hands off work through the private Drive folder named Allison Site Inbox. She does not need the Vercel CLI. A maintainer runs `import-drive` on a local copy of one submission folder, either a Google Drive for Desktop path or a downloaded copy, and follows [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md). The command copies that folder into a fresh local stage, checks `READY.json`, and prints the inspect receipt. It leaves the source folder unchanged. `--seal` may seal the staged copy. `approve` and `publish` stay separate commands and still require the printed `snapshotDigest`. Editing Drive does not publish and does not activate a code. The folder name is not a project id.
 
-Do not build or enable a Drive watcher, webhook, or poller. Do not put a client submission, its manifest, or a derived receipt in this repo. Do not connect this repo to that Drive folder from an agent turn.
+There is no Google API client, watcher, webhook, poller, or cron. Do not add one. Do not put a client submission, its manifest, or a derived receipt in this repo. Do not connect this repo to that Drive folder from an agent turn.
 
-`inspect`, `derive`, `seal`, `approve`, `publish`, and `rollback` are the publishing path. Publish requires an approval bound to the printed `snapshotDigest`. Rollback does not restore codes.
+`import-drive`, `inspect`, `derive`, `seal`, `approve`, `publish`, and `rollback` are the publishing path. Publish requires an approval bound to the printed `snapshotDigest`. Rollback does not restore codes.
 
 Share codes may be plaintext in the shared Drive access file, a copy of `templates/project-access.json`. Import them with `import-codes` using production credentials. The repo template uses the placeholder `replace-with-a-code` and cannot be imported. Plaintext codes stay in that Drive folder only. Do not put a client code in the repo, `dist/`, a commit, a log, a URL, a doc, or chat. The non-secret demo fixture code lives in `lib/demo-fixture.js` for local tests. Do not copy it into docs or production, and do not set `DEMO_FIXTURE` on production.
 
