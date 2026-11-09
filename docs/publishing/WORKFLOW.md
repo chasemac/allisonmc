@@ -113,7 +113,7 @@ Printed receipts:
 
 | Command | Prints |
 | --- | --- |
-| `inspect` | `project`, `submission`, `snapshotDigest`, `manifestDigest`, `manifestDigestMatches`, `files`, `publishable`, `published: false` |
+| `inspect` | `project`, `submission`, `snapshotDigest`, `manifestDigest`, `manifestDigestMatches`, `files`, `publishable`, `published: false`, then one tab-separated row per asset: `path`, `role`, `size`, the first 12 hex characters of that file's `sha256`, and `problems` (`none` when the asset has none). `content.json` is included in `files` and is not an asset row. The command does not print codes, notes, or file bytes. A database URL, pepper, session cookie, or JSON code inside a problem is redacted. |
 | `derive` | `inputDigest`, `outputDigest`, `published: false`, plus `DERIVED.json` in the output directory |
 | `seal` | `snapshotDigest`, `idempotent`, `published: false` |
 | `approve` | `approved`, `published: false` |
