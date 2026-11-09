@@ -155,7 +155,6 @@ test("open facts stay visible placeholders instead of guesses", () => {
     "CONFIRM EXACT GENSLER ROLE AND PROJECT EXPERIENCE BEFORE PUBLISHING",
     "CONFIRM WHICH SERVICES ARE FULLY REMOTE",
     "BUDGET RANGES TO BE ADDED ONLY AFTER ALLISON CONFIRMS THEM",
-    "INSTAGRAM LINK TO CONFIRM",
   ]) {
     assert.equal(all.includes(marker), true, marker);
   }
@@ -166,6 +165,14 @@ test("open facts stay visible placeholders instead of guesses", () => {
     assert.match(a, /href="https:\/\/www\.organizedbychoice\.com"/);
     assert.match(a, /rel="noopener noreferrer"/);
   }
+  // Chase confirmed the Instagram profile, so the public footer links out instead of keeping a placeholder.
+  const instagram = /<a href="https:\/\/www\.instagram\.com\/llison_mac\/" target="_blank" rel="noopener noreferrer">Instagram<span class="sr-only"> \(opens in a new tab\)<\/span><\/a>/;
+  for (const page of [...SITE_PAGES, "view.html"]) {
+    const html = read(page);
+    assert.equal(html.includes("INSTAGRAM LINK TO CONFIRM"), false, page);
+    assert.match(html, instagram, page);
+  }
+  assert.match(read("about.html"), /linkedin\.com\/in\/allisongaymcelroy\/[\s\S]*instagram\.com\/llison_mac\//);
   for (const page of ["services.html", "about.html", "index.html"]) {
     assert.match(read(page), /href="https:\/\/www\.organizedbychoice\.com"/, `${page} links Organized By Choice`);
   }
