@@ -1,0 +1,10 @@
+{
+  "projectId": "example-project",
+  "codes": [
+    {
+      "code": "replace-with-a-code",
+      "label": "client label",
+      "expiresOn": "2027-01-01"
+    }
+  ]
+}

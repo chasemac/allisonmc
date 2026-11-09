@@ -41,6 +41,18 @@
       ]
     },
     {
+      "id": "model",
+      "title": "Model",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "The frame below is a fictional self-contained sketch. It does not load a network. The model file is a download, not an embedded scene."
+        },
+        { "type": "widget", "mediaId": "sketch", "title": "Fictional schematic" },
+        { "type": "attachment", "attachmentId": "model" }
+      ]
+    },
+    {
       "id": "files",
       "title": "Files",
       "blocks": [
@@ -54,6 +66,13 @@
     }
   ],
   "attachments": [
+    {
+      "id": "model",
+      "label": "Fictional model (DAE)",
+      "kind": "file",
+      "mediaId": "model",
+      "filename": "fictional-model.dae"
+    },
     {
       "id": "notes",
       "label": "Fictional notes (PDF)",

@@ -12,15 +12,17 @@ Public pages stay static HTML, CSS, and a small client script. Do not add a fram
 
 A share code is redeemed by `POST /api/access` from the page script. The access page is not a form, and the field has no name, so a browser with JavaScript disabled cannot put the code in a URL. The server stores only an HMAC. It reads the private Blob canary and checks its digest before it sets an HttpOnly SameSite=Strict session for one project, then checks that session on every presentation, image, and PDF request. A public or merely reachable store is not enough. If leaving the project fails, the page stays on the project and says the session is still active. Responses use `Cache-Control: private, no-store`, `Referrer-Policy: no-referrer`, and `X-Robots-Tag: noindex`. Missing Postgres, Blob configuration, or rate-limit configuration fails closed. The in-memory adapter is for local tests and is refused on Vercel. Those tests do not call a live database or Blob store.
 
-The page renders validated JSON with fixed components: text, galleries, and attachments. Text is inserted as text. JPEG, PNG, WebP, and PDF are recognized by a short prefix, which is not a full parse or a sanitizer. JavaScript, HTML, MDX, Markdown files, and raw SVG are not renderable uploads. PDFs are authenticated downloads.
+The page renders validated JSON with fixed components: text, galleries, attachment downloads, and a sandboxed widget iframe. Text is inserted as text. JPEG, PNG, WebP, and PDF are recognized by a short prefix, which is not a full parse or a sanitizer. The widget is a separate HTML document in an iframe with `sandbox="allow-scripts allow-downloads"` and no `allow-same-origin`. Its response CSP blocks network, cookies, storage, and parent access. PDFs and DAE files are authenticated downloads. JavaScript, MDX, Markdown files, and raw SVG are not generic uploads.
 
-## Content handoff, not built
+## Content handoff
 
-Allison will hand off work through a private Drive inbox. She does not need the Vercel CLI. The developer CLI in `scripts/projects.mjs` may seed the fictional demo and maintain test data. It does not ingest Drive, and it is not publication.
+Allison hands off work through a private Drive folder. She does not need the Vercel CLI. A maintainer copies a verified snapshot and runs the manual commands in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md). Editing Drive does not publish and does not activate a code.
 
-Do not build or enable a Drive watcher, webhook, or poller unless a later request says to. Do not publish client files. Do not treat a folder name as a registered project. Do not connect this repo to any existing Drive folder, including Buckner Camp.
+Do not build or enable a Drive watcher, webhook, or poller. Do not put a client submission, its manifest, or a derived receipt in this repo. Do not treat a folder name as a registered project. Do not connect this repo to an existing Drive folder from an agent turn.
 
-There is no importer, snapshot sealer, approval record, or publication pointer in the code today. Do not describe those as present.
+`inspect`, `derive`, `seal`, `approve`, `publish`, and `rollback` are the publishing path. `derive` removes an unused external script into a new submission and leaves the original bytes alone. `seal` rejects HTML that still reaches the network. Publish requires an approval bound to the printed snapshot digest. Rollback does not restore codes.
+
+Share codes may be plaintext in the shared Drive access file. Import them with `import-codes` using production credentials. Preview must not have the production database URL or Blob credentials. Hosted preview is fail-closed, and the CLI refuses `VERCEL_ENV=preview` before it connects. `AMC_TARGET` is only the operator's shell flag. The server still stores only an HMAC. `DATA_STORE` and `MEDIA_STORE` stay unset on Vercel until the reviewed SQL is applied and a real project is ready. Do not remove or edit those Vercel variables from an agent turn.
 
 ## Secrets and hosting
 
