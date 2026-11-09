@@ -77,11 +77,22 @@ A script loaded from `https://www.gstatic.com` can be sealed and published as st
 
 If anything external remains after that one strip, `derive` fails and nothing is sealed. Inspect the derived directory and approve `outputDigest` / `snapshotDigest` from that inspection. The original snapshot stays unsealed.
 
-The project page links to `GET /api/projects/{projectId}/widgets/{mediaId}/open`. For a real project the link text is `Open 3D Kitchen Studio`. The fictional demo uses the block title. The route requires the project session and returns the stored HTML unchanged. The response CSP is a sandbox with `allow-scripts`, `allow-downloads`, and `allow-popups`, `script-src` limited to inline scripts and `https://www.gstatic.com`, and `connect-src 'none'`. The sandbox origin is opaque, so the file cannot read the session cookie or call this API. The parent page does not embed the widget. `/media/` does not return HTML. DAE files use `model/vnd.collada+xml`, `Content-Disposition: attachment`, and `nosniff`. A DAE with a doctype, entity, or external `init_from` is rejected. A relative `init_from` must name a file in the submission. The parent page does not listen for `postMessage`.
+The project page links to `GET /api/projects/{projectId}/widgets/{mediaId}/open`. For a real project the link text is `Open 3D Kitchen Studio`. The fictional demo uses the block title. The route requires the project session and returns the stored HTML unchanged. On a 200 response the function sets these headers and no others:
+
+- `Content-Type: text/html; charset=utf-8`
+- `Content-Security-Policy: sandbox allow-scripts allow-downloads allow-popups; default-src 'none'; script-src 'unsafe-inline' https://www.gstatic.com; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'`
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: no-referrer`
+- `Cache-Control: private, no-store`
+- `X-Robots-Tag: noindex`
+
+That policy has no `frame-ancestors` directive. The sandbox list does not include `allow-same-origin`, so the document origin is opaque and the file cannot read the session cookie or call this API. The response does not set `X-Frame-Options` or `Cross-Origin-Resource-Policy`. A missing session is a JSON 401 whose policy is `default-src 'none'; sandbox`, also without `frame-ancestors` or `X-Frame-Options`. The parent page does not embed the widget and does not listen for `postMessage`.
+
+`/media/` does not return HTML. Image, PDF, and DAE responses from `/media/` and file `/attachments/` set `Content-Type` to the stored type (`image/png`, `image/jpeg`, `image/webp`, `application/pdf`, or `model/vnd.collada+xml`), `Content-Security-Policy: default-src 'none'; sandbox`, `Cross-Origin-Resource-Policy: same-origin`, `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`, `Referrer-Policy: no-referrer`, `X-Robots-Tag: noindex`, and `Content-Disposition` (`inline` for an image, `attachment` for a PDF or DAE, with the safe filename). They do not set `X-Frame-Options` or `frame-ancestors`. A DAE with a doctype, entity, or external `init_from` is rejected. A relative `init_from` must name a file in the submission.
+
+`vercel.json` sends `X-Frame-Options: DENY` and a page policy that includes `frame-ancestors 'none'` only for paths matching `/((?!api/).*)`. The `/api/(.*)` header block sends `Cache-Control: private, no-store`, `X-Robots-Tag: noindex`, and `Referrer-Policy: no-referrer`. It does not send `X-Frame-Options` or a content security policy. Those page headers do not restrict framing of the widget open response or of media responses.
 
 A gstatic script may stay in the hosted widget. Edit that HTML for a phone layout only when the existing behavior still works. Remove the widget's own export buttons. DAE and PDF downloads are the authenticated links on the project page.
-
-Page responses keep `X-Frame-Options: DENY` and `frame-ancestors 'none'`. Those headers are not applied to `/api/`, so the widget response can be framed by this origin only.
 
 ## Commands
 
