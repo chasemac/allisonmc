@@ -1,0 +1,23 @@
+{
+  "projectId": "example-project",
+  "submissionId": "sub_example_001",
+  "title": "Short project name",
+  "subtitle": "Package or phase name under the heading",
+  "client": "Client name",
+  "location": "Place",
+  "preparedBy": "Author",
+  "date": "2026-01-01",
+  "notesForReviewers": "Notes for the maintainer.",
+  "content": {
+    "summary": "One or two sentences for the Overview tab.",
+    "sections": [
+      {
+        "id": "option-1",
+        "heading": "Option 1",
+        "summary": "One line shown while this card is collapsed.",
+        "body": "Opening paragraph for this option.\n\n## West wall\n\n- West wall: a 36\" shelf on a 9'-0\" run.\n- South end: a 24\" cabinet.\n\n## North wall\n\n- North wall: an 18\" niche and a window, 3'-0\" x 4'-0\".\n\nThe east side stays open."
+      }
+    ]
+  },
+  "assets": []
+}

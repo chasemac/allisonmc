@@ -1,6 +1,7 @@
 {
   "id": "demo-northglass",
-  "title": "Northglass Reading Room (fictional demo)",
+  "title": "Northglass Reading Room",
+  "subtitle": "Fictional demo for private viewing, not a client project",
   "summary": "A fictional project used to try private viewing. It is not a real commission and it is not Allison McElroy's work.",
   "fictional": true,
   "sections": [
@@ -17,13 +18,18 @@
     {
       "id": "option-a",
       "title": "Fictional option A",
+      "summary": "Invented west and north walls, with the east side left open.",
       "blocks": [
-        { "type": "text", "text": "This is a long fictional note for the tabbed viewer. It describes an invented reading room and not a real client, building, or measurement. The text is repeated so the section can collapse inside the Sections tab instead of stretching the page. Nothing here is a commission, a quote, or a personal fact." }
+        {
+          "type": "text",
+          "text": "This reading room is invented for the viewing page. Nothing here is a real client, a built room, or a measurement from a commission.\n\n## West wall\n\n- West wall: a 36\" invented shelf over a 9'-0\" bench.\n- South end: a 24\" fictional cabinet.\n\n## North wall\n\n- North wall: an 18\" invented niche and a 30\" fictional window, 3'-0\" x 4'-0\".\n\nThe east side stays open. A 5'-0\" x 2'-6\" invented table sits in the center. These figures exist only so the page can show labels, lists, and dimensions."
+        }
       ]
     },
     {
       "id": "option-b",
       "title": "Fictional option B",
+      "summary": "Invented glazed wall, roof, and window detail.",
       "blocks": [
         { "type": "text", "text": "Another invented paragraph for the heavy demo. It talks about a glazed wall, a simple roof, and a window detail that exist only in this fixture. Use it to check that several long sections stay inside one tab and that only one tab panel is open. This is not Allison McElroy's work." }
       ]
@@ -31,6 +37,7 @@
     {
       "id": "option-c",
       "title": "Fictional option C",
+      "summary": "Invented room, mullion, and shelf for layout testing.",
       "blocks": [
         { "type": "text", "text": "A third fictional section with enough sentences to fold. The room, the mullion, and the shelf are made up for layout testing. Opening this section should not reveal the drawings or the model file. The download and the full viewer stay on their own tab." }
       ]
@@ -38,6 +45,7 @@
     {
       "id": "option-d",
       "title": "Fictional option D",
+      "summary": "Filler about paper, ink, and spacing.",
       "blocks": [
         { "type": "text", "text": "Fourth invented section. It is here so a phone-width page can show a short tab bar instead of a long list of links. The words are filler about paper, ink, and spacing. No address, client, or real dimension belongs in this paragraph." }
       ]
@@ -45,6 +53,7 @@
     {
       "id": "option-e",
       "title": "Fictional option E",
+      "summary": "One heading opens at a time.",
       "blocks": [
         { "type": "text", "text": "Fifth invented section for the same reason. A reader can open one heading at a time. The other headings stay collapsed. This keeps a content-heavy fictional project from becoming one continuous scroll of every drawing and file." }
       ]
@@ -52,6 +61,7 @@
     {
       "id": "option-f",
       "title": "Fictional option F",
+      "summary": "Invented bench, lamp, and aisle.",
       "blocks": [
         { "type": "text", "text": "Sixth invented section. It mentions a fictional bench, a fictional lamp, and a fictional aisle only as layout text. Those objects are not part of a built project. The tab control should still fit on one horizontal row that can scroll." }
       ]
@@ -59,6 +69,7 @@
     {
       "id": "option-g",
       "title": "Fictional option G",
+      "summary": "Collapsed cards keep the heading and one line visible.",
       "blocks": [
         { "type": "text", "text": "Seventh invented section. Collapsing it leaves the heading visible and hides this paragraph. Keyboard arrows on the tab bar should move between Overview, Sections, Drawings, and Model and files without leaving the page." }
       ]

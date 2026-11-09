@@ -62,7 +62,7 @@ Set `DEMO_FIXTURE=1` only on a preview where that known code should work. `seed-
 
 ## Project file
 
-`id` is lowercase letters, numbers, hyphens, and underscores. `fictional` is `true` or `false` and is required. Sections contain `text`, `gallery`, `widget`, and `attachment` blocks. File attachments point at a media id. Link attachments are absolute `https` URLs without a username or password. Arbitrary HTML blocks are still rejected. A widget block only names a media id that the server has already checked.
+`id` is lowercase letters, numbers, hyphens, and underscores. `fictional` is `true` or `false` and is required. `title` is the heading. `subtitle` is optional and renders as a smaller line under it; omit it and the heading stands alone. Sections contain `text`, `gallery`, `widget`, and `attachment` blocks. A section may include an optional `summary` line for its collapsed card. Text may use blank lines, `- ` lists, `## ` subheadings, and `**bold**`. Those marks are escaped text, not HTML. File attachments point at a media id. Link attachments are absolute `https` URLs without a username or password. Arbitrary HTML blocks are still rejected. A widget block only names a media id that the server has already checked.
 
 Real client files do not belong in this repository, in `dist/`, or in `assets/`.
 
