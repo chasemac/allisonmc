@@ -42,11 +42,15 @@ Uploading the same submission id again with different bytes is an error. A corre
 
 ## Document shape
 
-`content.json` is the only JSON document. Its fields are `projectId`, `submissionId`, `title`, `subtitle`, `client`, `location`, `preparedBy`, `date`, `notesForReviewers`, `content`, and `assets`. `subtitle` is optional. `content` is `{ summary, sections: [{ id, heading, body, summary }] }`. A section `summary` is optional. Each asset is `{ path, role, note }`. Paths start with `assets/` and contain no `..`.
+`content.json` is the only JSON document. Its fields are `projectId`, `submissionId`, `title`, `subtitle`, `client`, `location`, `preparedBy`, `date`, `notesForReviewers`, `content`, and `assets`. `subtitle` is optional. `content` is `{ summary, sections, documents }`. `documents` is optional. A section is `{ id, heading, body, summary }`. A section `summary` is optional. Each asset is `{ path, role, note }`. Paths start with `assets/` and contain no `..`. An older file that has no `documents` key still validates.
 
 `title` is the page heading. `subtitle` is the smaller line under that heading. Leave `subtitle` out and the page shows only `title`, as before. On a phone the heading uses a smaller size either way.
 
 Section `body` stays one string. Blank lines, `- ` lists, `## ` subheadings, and `**bold**` are layout marks, not HTML. The page escapes the characters and does not run markup from the string. `summary` is the one line on a collapsed section card. Leave it out and the page uses the first sentence. A shape example is [templates/content.example.json](../../templates/content.example.json). The marks are written out in [templates/section-text.md](../../templates/section-text.md).
+
+`documents` is how a concept package becomes HTML that reflows. Each document is `{ id, heading, kicker, summary, blocks }`. `kicker` and `summary` are optional. `blocks` is an ordered list of `heading`, `paragraph`, `list`, `table`, `callout`, `figure`, and `source`. The viewer puts that page on Drawings. A `figure` path must use role `figure`. A `source` path must use role `source-page` and is the collapsed original page. Every file with those roles has to be referenced. They do not also appear as a gallery. Keep using `page-preview` only when the flat PNG is the page itself. Keep the PDF as `downloadable-pdf`.
+
+Antigravity and Muse should transcribe the words, numbers, and labels into those blocks. Photos, renderings, plans, and elevations are cropped figures. Text does not stay baked into an image unless it is a dimension or name printed inside a drawing, and those words are repeated in the HTML. Do not invent a measurement. Unknown fields, unknown block types, and over-long text fail `inspect`. The limits are in [templates/section-text.md](../../templates/section-text.md).
 
 Roles:
 
@@ -56,6 +60,8 @@ Roles:
 | `downloadable-3d-model` | `.dae` download |
 | `downloadable-pdf` | `.pdf` download |
 | `hero`, `3d-preview`, `gallery`, `page-preview`, `plan-sheet`, `proposal-preview`, `punchlist-preview`, `reference-photo` | `.png`, `.jpg`, `.jpeg`, or `.webp` |
+| `figure` | a cropped photo, rendering, plan, or elevation used inside a document |
+| `source-page` | the original full page, opened from a collapsed "View original page" block |
 
 Every asset path must exist, and every file except `READY.json` and `DERIVED.json` must be listed. The counts have to match. The media id is the basename without its extension. Two files that would share that id are rejected. Names match `^[A-Za-z0-9._-]{1,80}$`. Each file, including HTML and DAE, must be at most 20 MB. The size is checked before the file is read into a buffer. A short signature prefix is not a full sanitizer. A DAE `init_from` must be the exact path of another file in the submission. Suffix matches, CDATA, doctypes, entities, and external URLs are rejected. The parser does not load or execute XML.
 

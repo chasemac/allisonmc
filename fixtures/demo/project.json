@@ -82,6 +82,67 @@
       ]
     },
     {
+      "id": "concept-page",
+      "title": "Fictional concept page",
+      "kicker": "Invented package",
+      "summary": "A fictional page that reflows as text, a table, and a drawing.",
+      "blocks": [
+        {
+          "type": "flow",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "This page is invented for the viewing page. It is not a client project and it is not Allison McElroy's work."
+            },
+            { "type": "heading", "level": 2, "text": "Invented west wall" },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "West wall: a 36\" invented shelf over a 9'-0\" bench.",
+                "South end: a 24\" fictional cabinet."
+              ]
+            },
+            { "type": "heading", "level": 3, "text": "Checks before a fictional build" },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Confirm the invented aisle.",
+                "Leave the east side open."
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Invented sizes",
+              "columns": ["Item", "Size"],
+              "rows": [
+                ["Shelf", "36\""],
+                ["Window", "3'-0\" x 4'-0\""]
+              ]
+            },
+            {
+              "type": "callout",
+              "label": "Note",
+              "text": "Nothing on this page is a real measurement. **Center:** an invented table."
+            },
+            {
+              "type": "figure",
+              "mediaId": "plan",
+              "alt": "Fictional demo plan diagram of a rectangular room",
+              "caption": "Fictional plan, shown inside the page"
+            },
+            {
+              "type": "source",
+              "mediaId": "detail",
+              "alt": "Fictional demo window mullion detail",
+              "label": "View original page"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "elevations",
       "title": "Fictional elevations",
       "blocks": [

@@ -68,6 +68,8 @@ Sections on the Sections tab are `<details>` cards. The first card starts open. 
 
 Text is inserted with `textContent`. The renderer does not use `innerHTML`. Section body text may include blank lines, `- `, `* `, or `• ` bullets, `## ` and `### ` subheadings, `**bold**`, and a short label at the start of a line such as `West wall:`. Those marks become elements. The characters stay text. An optional project `subtitle` is a smaller line under the H1. Omit it and the title stands alone.
 
+`content.documents` is optional. Each entry is one package page (`id`, `heading`, optional `kicker`, optional `summary`, `blocks`) and is placed on Drawings ahead of a Page preview gallery. Block types are `heading` (level 2 or 3), `paragraph`, `list`, `table`, `callout`, `figure`, and `source`. Unknown fields and types are rejected. A `figure` block names an asset whose role is `figure`. A `source` block names a `source-page` asset and renders as a collapsed "View original page". Those two roles do not get their own gallery. `page-preview` still builds the Page preview gallery. Figures are lazy-loaded, use the document's alt text, open the existing lightbox, and are not stretched past the source pixels. A table sits in a horizontal scroller and stacks by row on a narrow screen. The same `textContent` rule applies inside every block. A submission with no `documents` array renders as before. The marks and the bounds are in [templates/section-text.md](templates/section-text.md).
+
 A real project's widget link is labeled `Open 3D Kitchen Studio`. The fictional demo uses the block title instead. The link opens a new tab. It is not an iframe.
 
 ## Widgets

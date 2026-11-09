@@ -1,15 +1,51 @@
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isAcceptableCode, lookupHash, mediaPath, normalizeCode } from "./lib/codes.js";
+import { seedDemo } from "./lib/demo-fixture.js";
+import { inspectSnapshot } from "./lib/ingest.js";
 import { handle } from "./lib/router.js";
 import { createMemoryServices } from "./lib/runtime.js";
-import { seedDemo } from "./lib/demo-fixture.js";
 import { readPublicFile } from "./lib/static-public.js";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const pepper = process.env.CODE_PEPPER || "local-demo-pepper-not-for-production";
 const services = createMemoryServices({ CODE_PEPPER: pepper });
 if (process.env.DEMO_FIXTURE === "1") await seedDemo(services);
+if (process.env.AMC_PREVIEW_DIR) await seedSnapshotPreview(services, process.env.AMC_PREVIEW_DIR);
+
+async function seedSnapshotPreview(services, dir) {
+  if (process.env.VERCEL === "1" || process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production") {
+    throw new Error("snapshot preview refused");
+  }
+  const code = process.env.AMC_PREVIEW_CODE || "";
+  if (!isAcceptableCode(code)) throw new Error("preview code refused");
+  const inspected = await inspectSnapshot(dir);
+  await services.store.upsertProject(inspected.mapped.presentation);
+  for (const asset of inspected.mapped.assets) {
+    const pathname = mediaPath(inspected.ready.projectId, asset.mediaId);
+    await services.media.put(pathname, asset.bytes, asset.contentType);
+    await services.store.putMedia({
+      projectId: inspected.ready.projectId,
+      mediaId: asset.mediaId,
+      pathname,
+      contentType: asset.contentType,
+      filename: asset.filename,
+      byteLength: asset.bytes.length,
+    });
+  }
+  const hash = lookupHash(normalizeCode(code), services.pepper);
+  if (!(await services.store.getCodeByHash(hash))) {
+    await services.store.insertCode({
+      id: "local-snapshot-preview",
+      lookupHash: hash,
+      projectId: inspected.ready.projectId,
+      label: "local snapshot preview",
+      expiresAt: Date.now() + 12 * 60 * 60 * 1000,
+    });
+  }
+  console.log(`snapshot preview loaded (${inspected.listed.size} files)`);
+}
 
 const port = Number(process.env.PORT || 4173);
 const server = http.createServer(async (req, res) => {
