@@ -1,13 +1,43 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import http from "node:http";
+import { existsSync, readdirSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { readPublicFile } from "../lib/static-public.js";
 
 const SENTINEL = "SENTINEL-CODE-NOT-A-SECRET";
+
+// CHROME_PATH wins. Otherwise use google-chrome on PATH, the macOS app, or a
+// Playwright Chromium download, so the test runs on a Mac too.
+function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  for (const dir of (process.env.PATH || "").split(path.delimiter)) {
+    for (const name of ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser"]) {
+      if (dir && existsSync(path.join(dir, name))) return path.join(dir, name);
+    }
+  }
+  const mac = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  if (existsSync(mac)) return mac;
+  for (const cache of [path.join(homedir(), "Library/Caches/ms-playwright"), path.join(homedir(), ".cache/ms-playwright")]) {
+    if (!existsSync(cache)) continue;
+    for (const build of readdirSync(cache).filter((name) => /^chromium-\d+$/.test(name)).sort().reverse()) {
+      for (const rel of [
+        "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "chrome-mac/Chromium.app/Contents/MacOS/Chromium",
+        "chrome-mac-x64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "chrome-linux64/chrome",
+        "chrome-linux/chrome",
+      ]) {
+        if (existsSync(path.join(cache, build, rel))) return path.join(cache, build, rel);
+      }
+    }
+  }
+  return null;
+}
+const CHROME = findChrome();
 
 function listen() {
   const requests = [];
@@ -44,12 +74,12 @@ function send(ws, method, params = {}) {
 send.next = 1;
 send.pending = new Map();
 
-test("a browser with scripts disabled cannot submit the project code", async () => {
+test("a browser with scripts disabled cannot submit the project code", { skip: CHROME ? false : "no Chrome found; set CHROME_PATH" }, async () => {
   const { server, port, requests } = await listen();
   const profile = await mkdtemp(path.join(tmpdir(), "amc-chrome-"));
   const stderr = [];
   const chrome = spawn(
-    "google-chrome",
+    CHROME,
     [
       "--headless=new",
       "--disable-gpu",

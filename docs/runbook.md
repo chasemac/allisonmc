@@ -40,6 +40,10 @@ When `DATA_STORE` and `MEDIA_STORE` are unset, or the host is a Vercel preview, 
 
 `npm start` does not use these services. It serves the public pages and the fictional demo.
 
+The build also does two things to the public pages in `dist/`. It adds `?v=<content hash>` to every `assets/` reference, so a replaced image gets a new URL despite the 30-day `/assets` cache. It refreshes the Lato preload links from Google's stylesheet, and keeps the committed links if Google can't be reached; `AMC_FONT_PRELOADS=skip` turns that off. `node scripts/lato-preloads.mjs --check` exits 1 when the committed links are stale; run it without `--check` to update them.
+
+`test/noscript-submit.test.js` drives a real Chrome. It uses `CHROME_PATH`, then `google-chrome` or `chromium` on `PATH`, then the macOS Chrome app or a Playwright Chromium download, and is skipped only when none is found.
+
 ## Developer commands
 
 Remote commands talk to Postgres and private Blob from a trusted machine. They do not call Google. `import-drive` reads a local directory the operator already has. Without `--seal` it does not open Postgres or Blob. With `--seal` it follows the same store rules as `seal` and still does not approve or publish. It reads the folder twice. A file whose size or SHA-256 changes between those reads stops the command with `still syncing, try again`. Run it again when the folder is stable. There is no watcher. `project-access.json` in the submission is refused unread. Codes stay in the separate access file. `.env.local` is filled from `.env.example` and never committed. For a live project, that file must hold the production `DATABASE_URL`, production `CODE_PEPPER`, and the private Blob credential. `AMC_TARGET=production` is required. A preview pepper against the shared database is refused.
