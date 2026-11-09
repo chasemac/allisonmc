@@ -17,7 +17,7 @@ import {
 } from "../lib/http.js";
 import { safeFilename } from "../lib/media-types.js";
 import { handle } from "../lib/router.js";
-import { createMemoryServices } from "../lib/runtime.js";
+import { createMemoryServices, rateConfig } from "../lib/runtime.js";
 
 const PEPPER = "test-pepper-not-secret-32chars!!";
 const env = { RATE_LIMIT_MAX: "8", RATE_LIMIT_WINDOW_MS: "600000" };
@@ -502,4 +502,21 @@ test("local forwarding headers come from the socket and page headers stay compat
   assert.equal(api.headers.find((item) => item.key === "X-Content-Type-Options").value, "nosniff");
   assert.equal(api.headers.some((item) => item.key === "Content-Security-Policy"), false);
   assert.equal(api.headers.some((item) => item.key === "X-Frame-Options"), false);
+});
+
+test("the shared access cap is off unless RATE_LIMIT_GLOBAL_MAX is set", () => {
+  assert.equal(rateConfig({}).globalMax, 0);
+  assert.equal(rateConfig({ RATE_LIMIT_GLOBAL_MAX: "" }).globalMax, 0);
+  assert.equal(rateConfig({ RATE_LIMIT_GLOBAL_MAX: "200" }).globalMax, 200);
+  assert.throws(() => rateConfig({ RATE_LIMIT_MAX: "8", RATE_LIMIT_GLOBAL_MAX: "4" }));
+});
+
+test("many addresses do not lock out a valid code when the shared cap is off", async () => {
+  const services = await setup();
+  for (let i = 0; i < 120; i += 1) {
+    const response = await handle(accessRequest("WRONG-CODE-0000", { ip: `198.51.100.${i}` }), { services, env });
+    assert.notEqual(response.status, 429);
+  }
+  const ok = await handle(accessRequest(TEST_FIXTURE_CODE, { ip: "203.0.113.7" }), { services, env });
+  assert.equal(ok.status, 200);
 });
