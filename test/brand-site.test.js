@@ -114,10 +114,11 @@ test("photo slots show the chosen McElroy photos or labeled placeholders, never 
     const html = read(page);
     for (const id of ids) assert.match(html, new RegExp(`\\[PHOTO: ${id}\\]`), `${page} ${id}`);
   }
-  // A-01 is Allison's portrait once its file is in the repo; until then it stays a placeholder.
+  // A-01 is Allison's portrait (supplied by Chase), on the homepage About band and the About page.
   for (const page of ["index.html", "about.html"]) {
     const html = read(page);
-    assert.ok(html.includes("[PHOTO: A-01]") || /data-photo="A-01"[\s\S]*?alt="Allison McElroy"/.test(html), `${page} A-01`);
+    assert.equal(html.includes("[PHOTO: A-01]"), false, `${page} A-01 still a placeholder`);
+    assert.match(html, /data-photo="A-01">\s*<picture>[\s\S]*?src="assets\/img\/allison-a01-\d+\.jpg"[^>]*alt="Allison McElroy"/, `${page} A-01`);
   }
   assert.match(read("work-mcelroy-kitchen.html"), /During the renovation/);
   assert.match(read("work-mcelroy-kitchen.html"), /<span class="ph-label">Before<\/span>/);
