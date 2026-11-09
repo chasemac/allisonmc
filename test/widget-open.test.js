@@ -94,6 +94,7 @@ test("widget open and media responses pin the headers they actually send", async
   assert.equal(WIDGET_CSP.includes("frame-ancestors"), false);
   assert.equal(WIDGET_CSP.includes("allow-same-origin"), false);
   assert.deepEqual(headerEntries(response), [
+    ["accept-ranges", "none"],
     ["cache-control", "private, no-store"],
     ["content-security-policy", WIDGET_CSP],
     ["content-type", "text/html; charset=utf-8"],
@@ -107,6 +108,7 @@ test("widget open and media responses pin the headers they actually send", async
   const image = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/media/plan", { headers: { cookie } }), { services, env });
   assert.equal(image.status, 200);
   assert.deepEqual(headerEntries(image), [
+    ["accept-ranges", "none"],
     ["cache-control", "private, no-store"],
     ["content-disposition", "inline"],
     ["content-security-policy", "default-src 'none'; sandbox"],
@@ -125,6 +127,7 @@ test("widget open and media responses pin the headers they actually send", async
   const model = await handle(new Request("http://127.0.0.1/api/projects/demo-northglass/attachments/model", { headers: { cookie } }), { services, env });
   assert.equal(model.status, 200);
   assert.deepEqual(headerEntries(model), [
+    ["accept-ranges", "none"],
     ["cache-control", "private, no-store"],
     ["content-disposition", 'attachment; filename="fictional-model.dae"'],
     ["content-security-policy", "default-src 'none'; sandbox"],
@@ -140,7 +143,7 @@ test("widget open and media responses pin the headers they actually send", async
   const api = config.headers.find((item) => item.source === "/api/(.*)");
   assert.equal(pages.headers.find((item) => item.key === "X-Frame-Options").value, "DENY");
   assert.match(pages.headers.find((item) => item.key === "Content-Security-Policy").value, /frame-ancestors 'none'/);
-  assert.deepEqual(api.headers.map((item) => item.key), ["Cache-Control", "X-Robots-Tag", "Referrer-Policy"]);
+  assert.deepEqual(api.headers.map((item) => item.key), ["Cache-Control", "X-Robots-Tag", "Referrer-Policy", "X-Content-Type-Options", "Strict-Transport-Security"]);
   assert.equal(api.headers.some((item) => item.key === "X-Frame-Options" || item.key === "Content-Security-Policy"), false);
 
   const workflow = readFileSync("docs/publishing/WORKFLOW.md", "utf8");
