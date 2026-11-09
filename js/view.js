@@ -103,6 +103,7 @@
       return "files";
     }
     const types = blocks.map((block) => (block && block.type) || "");
+    if (types.indexOf("flow") >= 0) return "drawings";
     if (types.indexOf("widget") >= 0) return "files";
     if (types.indexOf("gallery") >= 0) return "drawings";
     if (types.indexOf("attachment") >= 0) return "files";
@@ -235,6 +236,126 @@
     for (const part of parts) node.append(el("span", inlineClass(part), part.text));
   }
 
+  function capAtSource(img) {
+    img.addEventListener("load", () => {
+      if (!img.naturalWidth || !img.style) return;
+      img.style.maxWidth = "min(100%, " + img.naturalWidth + "px)";
+    });
+  }
+
+  function mediaSrc(projectId, mediaId) {
+    if (!safeId(mediaId, mediaPattern) || !safeId(projectId, projectPattern)) return "";
+    return `/api/projects/${projectId}/media/${mediaId}`;
+  }
+
+  function zoomableImage(src, alt, onOpen) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "flow-zoom";
+    button.setAttribute("aria-label", "Expand image: " + alt);
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = alt;
+    img.loading = "lazy";
+    img.decoding = "async";
+    capAtSource(img);
+    button.append(img);
+    button.addEventListener("click", onOpen);
+    return button;
+  }
+
+  function renderFlow(projectId, flow) {
+    const wrap = el("div", "flow");
+    const blocks = Array.isArray(flow && flow.blocks) ? flow.blocks : [];
+    const figures = [];
+    for (const block of blocks) {
+      if (!block || (block.type !== "figure" && block.type !== "source")) continue;
+      const src = mediaSrc(projectId, block.mediaId);
+      if (!src) continue;
+      figures.push({
+        src,
+        alt: String(block.alt || ""),
+        caption: block.type === "figure" && block.caption ? String(block.caption) : String(block.label || block.alt || ""),
+      });
+    }
+    let figureIndex = 0;
+    for (const block of blocks) {
+      if (!block || typeof block !== "object") continue;
+      if (block.type === "heading" && (block.level === 2 || block.level === 3)) {
+        wrap.append(el(block.level === 2 ? "h3" : "h4", "flow-heading", String(block.text || "")));
+      } else if (block.type === "paragraph" && typeof block.text === "string") {
+        wrap.append(renderProse(block.text));
+      } else if (block.type === "list" && Array.isArray(block.items)) {
+        const list = el(block.ordered === true ? "ol" : "ul");
+        for (const item of block.items) {
+          const li = el("li");
+          appendInlines(li, parseInlines(String(item)));
+          list.append(li);
+        }
+        wrap.append(list);
+      } else if (block.type === "table" && Array.isArray(block.columns) && Array.isArray(block.rows)) {
+        const scroller = el("div", "flow-table-wrap");
+        const table = el("table", "flow-table");
+        if (block.caption) table.append(el("caption", "", String(block.caption)));
+        const head = el("thead");
+        const headRow = el("tr");
+        for (const column of block.columns) {
+          const cell = el("th", "", String(column));
+          cell.setAttribute("scope", "col");
+          headRow.append(cell);
+        }
+        head.append(headRow);
+        table.append(head);
+        const body = el("tbody");
+        for (const row of block.rows) {
+          if (!Array.isArray(row)) continue;
+          const tr = el("tr");
+          row.forEach((cell, index) => {
+            const td = el("td");
+            const label = block.columns[index] == null ? "" : String(block.columns[index]);
+            td.setAttribute("data-label", label);
+            appendInlines(td, parseInlines(String(cell)));
+            tr.append(td);
+          });
+          body.append(tr);
+        }
+        table.append(body);
+        scroller.append(table);
+        wrap.append(scroller);
+      } else if (block.type === "callout" && typeof block.text === "string") {
+        const aside = el("aside", "flow-callout");
+        if (block.label) aside.append(el("p", "flow-callout-label", String(block.label)));
+        aside.append(renderProse(block.text));
+        wrap.append(aside);
+      } else if (block.type === "figure" || block.type === "source") {
+        const src = mediaSrc(projectId, block.mediaId);
+        if (!src) continue;
+        const current = figureIndex;
+        figureIndex += 1;
+        const alt = String(block.alt || "");
+        if (block.type === "source") {
+          const details = document.createElement("details");
+          details.className = "flow-source";
+          const summary = document.createElement("summary");
+          summary.textContent = block.label ? String(block.label) : "View original page";
+          details.append(summary);
+          details.append(zoomableImage(src, alt, () => openLightbox(figures, current)));
+          wrap.append(details);
+        } else {
+          const figure = el("figure", "flow-figure");
+          figure.append(zoomableImage(src, alt, () => openLightbox(figures, current)));
+          if (block.caption) {
+            const caption = el("figcaption", "flow-caption");
+            appendInlines(caption, parseInlines(String(block.caption)));
+            figure.append(caption);
+          }
+          wrap.append(figure);
+        }
+      }
+    }
+    return wrap;
+  }
+
   function renderProse(raw) {
     const wrap = el("div", "section-prose");
     for (const block of parseSectionText(raw)) {
@@ -292,6 +413,8 @@
         open.target = "_blank";
         open.rel = "noopener noreferrer";
         parent.append(open);
+      } else if (block.type === "flow") {
+        parent.append(renderFlow(presentation.id, block));
       } else if (block.type === "text" && typeof block.text === "string") {
         parent.append(renderProse(block.text));
       } else if (block.type === "gallery" && Array.isArray(block.images)) {
@@ -393,6 +516,7 @@
       for (const section of grouped[name]) {
         const article = el("article", "project-section");
         article.id = "s-" + section.id;
+        if (section.kicker) article.append(el("p", "flow-kicker", String(section.kicker)));
         if (section.title) article.append(el("h2", "", String(section.title)));
         appendBlocks(article, section, presentation);
         panels[name].append(article);
@@ -455,6 +579,7 @@
       img.src = image.src;
       img.alt = image.alt;
       caption.textContent = image.caption;
+      capAtSource(img);
     }
     show();
     lastFocus = document.activeElement;

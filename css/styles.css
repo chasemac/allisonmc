@@ -594,6 +594,165 @@ dialog button {
   letter-spacing: 0.01em;
 }
 
+.flow-kicker {
+  margin: 0 0 0.25rem;
+  color: var(--cypress);
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.flow {
+  max-width: 46rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.flow-heading {
+  font-family: var(--font);
+  font-weight: 700;
+  color: var(--cypress);
+}
+
+.flow h3.flow-heading {
+  margin: 1.15rem 0 0.45rem;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  text-transform: none;
+}
+
+.flow h4.flow-heading {
+  margin: 0.95rem 0 0.35rem;
+  font-size: 1.02rem;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.flow .section-prose,
+.flow .section-prose p,
+.flow .section-prose li {
+  max-width: none;
+}
+
+.flow-callout {
+  margin: 0 0 0.95rem;
+  padding: 0.85rem 1rem 0.35rem;
+  background: #fffdf9;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.flow-callout-label {
+  margin: 0 0 0.35rem;
+  color: var(--cypress);
+  font-family: var(--font);
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.flow-figure {
+  margin: 0.4rem 0 1rem;
+  max-width: 100%;
+}
+
+.flow-zoom {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: zoom-in;
+}
+
+.flow-zoom img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+}
+
+.flow-caption {
+  margin: 0.45rem 0 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.4;
+  text-transform: none;
+}
+
+.flow-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.flow-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font);
+  font-size: 0.98rem;
+  font-weight: 400;
+}
+
+.flow-table caption {
+  margin: 0 0 0.4rem;
+  color: var(--ink);
+  font-weight: 700;
+  text-align: left;
+  caption-side: top;
+}
+
+.flow-table th,
+.flow-table td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+  font-weight: 400;
+}
+
+.flow-table th {
+  background: #fffdf9;
+  font-weight: 700;
+}
+
+.flow-source {
+  margin: 0.4rem 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: #fffdf9;
+}
+
+.flow-source summary {
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  font-family: var(--font);
+  font-weight: 700;
+}
+
+.flow-source summary:focus-visible {
+  outline: 2px solid var(--cypress);
+  outline-offset: 2px;
+}
+
+.flow-source .flow-zoom {
+  margin: 0 1rem 1rem;
+}
+
 a.open-widget,
 a.open-widget:hover,
 a.open-widget:focus,
@@ -771,6 +930,49 @@ dialog img {
 
   .gallery {
     grid-template-columns: 1fr;
+  }
+
+  .flow-table caption {
+    display: block;
+    width: 100%;
+  }
+
+  .flow-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .flow-table,
+  .flow-table tbody,
+  .flow-table tr,
+  .flow-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .flow-table tr {
+    margin: 0 0 0.75rem;
+    border: 1px solid var(--line);
+    background: #fffdf9;
+  }
+
+  .flow-table td {
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .flow-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.15rem;
+    font-weight: 700;
   }
 
   a.open-widget,

@@ -17,7 +17,66 @@
         "summary": "One line shown while this card is collapsed.",
         "body": "Opening paragraph for this option.\n\n## West wall\n\n- West wall: a 36\" shelf on a 9'-0\" run.\n- South end: a 24\" cabinet.\n\n## North wall\n\n- North wall: an 18\" niche and a window, 3'-0\" x 4'-0\".\n\nThe east side stays open."
       }
+    ],
+    "documents": [
+      {
+        "id": "concept-p1",
+        "kicker": "Concept package",
+        "heading": "Option 1 overview",
+        "summary": "One page of the package, as text that reflows.",
+        "blocks": [
+          { "type": "paragraph", "text": "Opening paragraph for this page. The east side stays open." },
+          { "type": "heading", "level": 2, "text": "At a glance" },
+          {
+            "type": "list",
+            "ordered": false,
+            "items": [
+              "**Layout:** L - west + north only.",
+              "**Cart:** a 36\" invented shelf on a 9'-0\" run."
+            ]
+          },
+          {
+            "type": "list",
+            "ordered": true,
+            "items": ["Confirm the window, 3'-0\" x 4'-0\".", "Leave the east side open."]
+          },
+          {
+            "type": "table",
+            "caption": "Sizes named on this page",
+            "columns": ["Item", "Size"],
+            "rows": [["Shelf", "36\""], ["Window", "3'-0\" x 4'-0\""]]
+          },
+          {
+            "type": "callout",
+            "label": "Note",
+            "text": "Sample the finish in the room before ordering."
+          },
+          {
+            "type": "figure",
+            "path": "assets/concept-fig-p1-plan.png",
+            "alt": "Schematic plan of the west and north L",
+            "caption": "Schematic plan - not to scale."
+          },
+          {
+            "type": "source",
+            "path": "assets/concept-p1-overview.png",
+            "alt": "Original concept page 1",
+            "label": "View original page"
+          }
+        ]
+      }
     ]
   },
-  "assets": []
+  "assets": [
+    {
+      "path": "assets/concept-fig-p1-plan.png",
+      "role": "figure",
+      "note": "Cropped plan drawing for the concept page. No paragraph text baked into the image."
+    },
+    {
+      "path": "assets/concept-p1-overview.png",
+      "role": "source-page",
+      "note": "Original full page, shown collapsed under the HTML page."
+    }
+  ]
 }
