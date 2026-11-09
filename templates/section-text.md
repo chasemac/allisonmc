@@ -13,7 +13,9 @@ Each entry in `content.sections` uses:
 | `summary` | no | One line shown while the card is collapsed. Leave it out and the viewer uses the first sentence of `body`. |
 | `body` | yes | The full section. Same facts as before. Layout marks below. No HTML. |
 
-`body` is one string. The viewer escapes it. Tags, scripts, and links in the string stay visible characters.
+`body` is one string. The viewer inserts it with `textContent`. It does not parse HTML. Tags, scripts, and links in the string stay visible characters.
+
+On the project page, a long section is a card on the Sections tab. `summary` is the one line while that card is collapsed. `title` is the H1. Optional `subtitle` is the smaller line under it. The page does not read `?project=`.
 
 ```text
 Opening paragraph. A blank line starts the next block.
@@ -33,7 +35,7 @@ A later paragraph can name a 5'-0" x 2'-6" table. **Center:** two stools.
 Marks:
 
 - A blank line separates paragraphs.
-- A line that starts with `## ` is a subheading. `### ` works the same way.
+- A line that starts with `## ` or `### ` is a subheading.
 - A line that starts with `- `, `* `, or `• ` is a bullet. Keep one fact on each bullet.
 - `**like this**` is bold. A short label at the start of a paragraph or bullet, such as `West wall:`, is also bold.
 - Feet and inches stay written as they are, for example `36"`, `9'-0"`, `12'-2 1/2"`, `3'x4'`, and `5'-0" x 3'-0"`.
