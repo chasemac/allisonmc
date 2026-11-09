@@ -1,6 +1,6 @@
 # Publishing workflow
 
-Allison's client work is not copied into this repository. A person keeps the submission in a private Drive folder and a maintainer runs the commands below from a verified local copy. There is no Drive watcher, poller, or webhook. Editing Drive does not publish files and does not activate a code.
+Allison's client work is not copied into this repository. She puts a snapshot in the private Drive folder Allison Site Inbox. A maintainer copies a verified snapshot to a local directory and runs the commands below. There is no Drive watcher, poller, or webhook. Editing Drive does not publish files and does not activate a code. The folder name is not a project id. Do not connect this repo to that folder from an agent turn.
 
 This document uses placeholders. It contains no client names, project ids, submission ids, digests, or codes.
 
@@ -11,7 +11,7 @@ This document uses placeholders. It contains no client names, project ids, submi
 | Neon Postgres | Free database `lucky-pond-84293267` in `aws-us-east-1`. `DATABASE_URL` is set on Vercel production and preview. It is not in git. |
 | Blob | Private store `store_Ce6NEE2VP8BkMGv8`. The canary read matches `BLOB_PRIVATE_CANARY_SHA256`. An unauthenticated read is rejected. The hash is not in git. |
 | Peppers | Production and preview each have their own `CODE_PEPPER`. |
-| Activation | `DATA_STORE` and `MEDIA_STORE` stay unset on Vercel. `/api/access` stays 503 until those two are set after review. |
+| Activation | Do not change `DATA_STORE` or `MEDIA_STORE` from an agent turn. If they are missing, `/api/access` returns 503. Production uses `postgres` and `blob` once a person has turned access on. Do not set them on preview. |
 
 Preview must not hold the production database URL, Blob store id, or Blob token. A preview pepper plus those credentials can write a second HMAC and can seal or publish. Hosted preview is fail-closed in code, and the maintenance CLI refuses `VERCEL_ENV=preview` before it connects. `AMC_TARGET=production` only selects the operator's shell. It does not make a preview credential safe. Remove `DATABASE_URL`, `BLOB_STORE_ID`, and Blob tokens from the Vercel Preview environment. Do not remove them from Production. This change does not edit those variables.
 
@@ -22,7 +22,7 @@ AMC_TARGET=production
 # plus that environment's DATABASE_URL, CODE_PEPPER, BLOB_STORE_ID, and Blob credential
 ```
 
-The CLI refuses a remote command when `AMC_TARGET` is not `production`. `seed-demo` also refuses production. The process sets `DATA_STORE=postgres` and `MEDIA_STORE=blob` for that command. It does not change the Vercel project. Leave those two variables unset on Vercel until `db/schema.sql` has been applied and a real project is ready. When that happens, set them on production only. Do not set them on preview while preview uses a different pepper against this database.
+The CLI refuses a remote command when `AMC_TARGET` is not `production`. `seed-demo` also refuses production. The process sets `DATA_STORE=postgres` and `MEDIA_STORE=blob` for that command only. It does not change the Vercel project. Do not set those two variables on preview. Preview uses a different pepper and must not point at this database. Neon stays on the Free plan. Do not upgrade it.
 
 Apply `db/schema.sql` from a reviewed copy. This repository does not run it.
 
@@ -59,7 +59,7 @@ Roles:
 
 Every asset path must exist, and every file except `READY.json` and `DERIVED.json` must be listed. The counts have to match. The media id is the basename without its extension. Two files that would share that id are rejected. Names match `^[A-Za-z0-9._-]{1,80}$`. Each file, including HTML and DAE, must be at most 20 MB. The size is checked before the file is read into a buffer. A short signature prefix is not a full sanitizer. A DAE `init_from` must be the exact path of another file in the submission. Suffix matches, CDATA, doctypes, entities, and external URLs are rejected. The parser does not load or execute XML.
 
-A validated handoff of 31 files is `content.json`, one HTML widget, two DAE files, four PDFs, 21 PNGs, and two JPEGs. The roles on those images come from `content.json`. This repository does not contain that handoff, and this branch does not publish it.
+A validated handoff of 31 files is `content.json`, one HTML widget, two DAE files, four PDFs, 21 PNGs, and two JPEGs. The roles on those images come from `content.json`. This repository does not contain that handoff. Publishing it is the CLI sequence below, from a local copy, not a commit.
 
 The viewer adds a details section and a notes section when those fields are present, then one section per role that has files. Generated section ids are `meta-details`, `meta-notes`, and `role-<role>`. A content section must not use those ids. The mapped page is `fictional: false`. Text is rendered as text. A widget is a link to its full page, not an embedded frame. DAE and PDF entries are authenticated downloads.
 
@@ -77,35 +77,72 @@ A script loaded from `https://www.gstatic.com` can be sealed and published as st
 
 If anything external remains after that one strip, `derive` fails and nothing is sealed. Inspect the derived directory and approve `outputDigest` / `snapshotDigest` from that inspection. The original snapshot stays unsealed.
 
-The project page links to `GET /api/projects/{projectId}/widgets/{mediaId}/open`. That route requires the project session and returns the stored HTML unchanged. The response CSP is a sandbox with `allow-scripts`, `allow-downloads`, and `allow-popups`, `script-src` limited to inline scripts and `https://www.gstatic.com`, and `connect-src 'none'`. The sandbox origin is opaque, so the file cannot read the session cookie or call this API. `/media/` does not return HTML. DAE files use `model/vnd.collada+xml`, `Content-Disposition: attachment`, and `nosniff`. A DAE with a doctype, entity, or external `init_from` is rejected. A relative `init_from` must name a file in the submission. The parent page does not listen for `postMessage`.
+The project page links to `GET /api/projects/{projectId}/widgets/{mediaId}/open`. For a real project the link text is `Open 3D Kitchen Studio`. The fictional demo uses the block title. The route requires the project session and returns the stored HTML unchanged. The response CSP is a sandbox with `allow-scripts`, `allow-downloads`, and `allow-popups`, `script-src` limited to inline scripts and `https://www.gstatic.com`, and `connect-src 'none'`. The sandbox origin is opaque, so the file cannot read the session cookie or call this API. The parent page does not embed the widget. `/media/` does not return HTML. DAE files use `model/vnd.collada+xml`, `Content-Disposition: attachment`, and `nosniff`. A DAE with a doctype, entity, or external `init_from` is rejected. A relative `init_from` must name a file in the submission. The parent page does not listen for `postMessage`.
+
+A gstatic script may stay in the hosted widget. Edit that HTML for a phone layout only when the existing behavior still works. Remove the widget's own export buttons. DAE and PDF downloads are the authenticated links on the project page.
 
 Page responses keep `X-Frame-Options: DENY` and `frame-ancestors 'none'`. Those headers are not applied to `/api/`, so the widget response can be framed by this origin only.
 
 ## Commands
 
-`inspect` and `derive` read a local directory and do not touch the database.
+`inspect` and `derive` read a local directory and do not touch the database. `register-project` creates a placeholder and publishes nothing. Register the project id before the first seal.
 
 ```bash
 node scripts/projects.mjs inspect --dir /path/to/snapshot
 node scripts/projects.mjs derive --dir /path/to/original --out /path/to/derived --submission new-submission-id
-```
-
-The rest use the production environment. `register-project` creates a placeholder and publishes nothing.
-
-```bash
 AMC_TARGET=production node scripts/projects.mjs register-project --store remote --project project-id --title "Title from content.json"
-AMC_TARGET=production node scripts/projects.mjs seal --store remote --dir /path/to/derived
+AMC_TARGET=production node scripts/projects.mjs seal --store remote --dir /path/to/snapshot
 AMC_TARGET=production node scripts/projects.mjs approve --store remote --project project-id --submission submission-id --digest snapshotDigest --operation publish
 AMC_TARGET=production node scripts/projects.mjs publish --store remote --project project-id --submission submission-id --digest snapshotDigest
 ```
 
-`seal` stores bytes at `projects/{projectId}/snap/{digest}/{mediaId}` and writes the snapshot and its file list in one transaction. `publish` only moves the pointer after approval. The live page and every file are read from that pointer's snapshot. A media id that is not in the snapshot is not served, including one left behind by an older snapshot. Repeating a publish is a no-op. `register-project` does not replace an existing presentation. `put-project` does not replace a published one.
+The live sequence after `inspect` is `seal`, then `approve --operation publish`, then `publish`. Use the `snapshotDigest` that `inspect` printed. Do not approve a differently computed manifest digest.
+
+Printed receipts:
+
+| Command | Prints |
+| --- | --- |
+| `inspect` | `project`, `submission`, `snapshotDigest`, `manifestDigest`, `manifestDigestMatches`, `files`, `publishable`, `published: false` |
+| `derive` | `inputDigest`, `outputDigest`, `published: false`, plus `DERIVED.json` in the output directory |
+| `seal` | `snapshotDigest`, `idempotent`, `published: false` |
+| `approve` | `approved`, `published: false` |
+| `publish` | `version`, `idempotent`, `published: true`, `codesChanged: false` |
+
+`seal` stores bytes at `projects/{projectId}/snap/{digest}/{mediaId}` and writes the snapshot and its file list in one transaction. `publish` only moves the pointer after approval. The live page and every file are read from that pointer's snapshot. A media id that is not in the snapshot is not served, including one left behind by an older snapshot. Repeating a publish of the same digest is a no-op. `register-project` does not replace an existing presentation. `put-project` does not replace a published one.
+
+## Republish
+
+A correction is a new submission id and a new `READY.json`. Do not reuse a submission id with different bytes. `seal` rejects that as a digest conflict.
+
+1. Copy the new snapshot out of Allison Site Inbox.
+2. `node scripts/projects.mjs inspect --dir /path/to/snapshot` and keep the printed `snapshotDigest`.
+3. `AMC_TARGET=production node scripts/projects.mjs seal --store remote --dir /path/to/snapshot`
+4. `AMC_TARGET=production node scripts/projects.mjs approve --store remote --project project-id --submission submission-id --digest snapshotDigest --operation publish`
+5. `AMC_TARGET=production node scripts/projects.mjs publish --store remote --project project-id --submission submission-id --digest snapshotDigest`
+6. Run the verification below. Do not write the code into the command transcript, git, or chat.
+
+`derive`, when used, is a new submission id as well. Inspect the derived directory and approve that directory's `snapshotDigest`.
 
 Rollback restores an earlier sealed snapshot. It needs its own approval (`--operation rollback`) and the same digest. It does not restore a revoked or rotated code. Deleting the Drive folder does not unpublish.
 
+## Verification
+
+After a production publish, with the stores configured:
+
+- `POST /api/access` with a wrong code returns 401 and the message `That code is not valid.`
+- `POST /api/access` with the project's code in the JSON body returns 200 and a `project` object. The response must not echo the code.
+- With that session cookie, `GET /api/projects/{projectId}/media/{mediaId}`, an attachment URL, or `/api/projects/{projectId}/widgets/{mediaId}/open` returns 200.
+- The same cookie against another project's id returns 404.
+- A request with no session against those asset routes returns 401.
+- `?code=` on `/api/access` returns 400 and does not authenticate.
+
+If `DATA_STORE` or `MEDIA_STORE` is missing, or the host is a preview deployment, `/api/access` returns 503 and sets no session. That is fail-closed, not a successful publish check.
+
+Open `/` and `/musings.html` as well. They stay public and use Lato. The project page is `/view.html`. `?project=` is ignored. The code is what opens the project. The page has no Leave project button. 3D preview images are on Model & files, not Drawings.
+
 ## Codes
 
-Allison can write client codes in the shared Drive folder, in a copy of `templates/project-access.json`. The placeholder `replace-with-a-code` cannot be imported. Plaintext codes stay in that shared folder only. They are not written to git, the static build, URLs, or logs.
+Allison can write client codes in Allison Site Inbox, in a copy of `templates/project-access.json`. The placeholder `replace-with-a-code` cannot be imported. Plaintext codes stay in that Drive folder only. They are not written to git, the static build, URLs, logs, docs, or chat.
 
 A code becomes usable only after `import-codes`. That command is not content approval and it does not publish a submission.
 
