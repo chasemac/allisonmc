@@ -53,7 +53,7 @@ Each document:
 | `id` | yes | Stable id. Not `meta-details`, `meta-notes`, `role-…`, or another section id. |
 | `heading` | yes | Page title. |
 | `kicker` | no | Small line above the title, such as `THE PLAN`. |
-| `summary` | no | One line. The Drawings tab shows the page open, so the words that must be read also belong in `blocks`. |
+| `summary` | no | Accepted and stored on the mapped section (180 characters). Drawings does not render it. That tab shows the page open, so there is no collapsed card for a one-line summary, and the viewer does not add a lead line. Put every sentence a reader needs in `blocks`. A snapshot that already includes `summary` still validates. |
 | `blocks` | yes | The page, in order. No HTML. |
 
 Block types:
@@ -68,7 +68,7 @@ Block types:
 | `figure` | `path` of an asset with role `figure`, `alt`, optional `caption`. |
 | `source` | `path` of an asset with role `source-page`, `alt`, optional `label`. The viewer uses `View original page` when `label` is omitted. |
 
-The page is inserted with `textContent`. Tags in a string stay visible characters. A figure is lazy-loaded, not stretched past its own pixel size, and opens the same lightbox as a gallery. A table scrolls inside its own frame and, on a narrow screen, stacks each row under its column name. The document goes on Drawings. `figure` and `source-page` do not also become galleries. A `page-preview` asset still becomes the Page preview gallery, so use `source-page` when the HTML page is the one to read and the flat PNG is only the original.
+The page is inserted with `textContent`. Tags in a string stay visible characters. A figure is lazy-loaded, not stretched past its own pixel size, and opens the same lightbox as a gallery. A table scrolls inside its own frame and, on a narrow screen, stacks each row under its column name. The document goes on Drawings. `figure` and `source-page` do not also become galleries. A `page-preview` asset still becomes the Page preview gallery when the submission has no `documents`. Use `source-page` when the HTML page is the one to read and the flat PNG is only the original. If both `documents` and `page-preview` are present, `inspect` warns and names `source-page`. That warning leaves the snapshot publishable.
 
 Bounds, all inclusive: 12 documents, 80 blocks, 40 list items, 8 table columns, 40 table rows. Headings 200 characters, paragraphs and callouts 4000, list items 2000, table cells 400, column names 80, alt and captions 300, labels 80, kickers 160. Unknown fields and unknown block types are rejected. Every `figure` and `source-page` file has to be named by a block.
 

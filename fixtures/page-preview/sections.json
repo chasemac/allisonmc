@@ -1,0 +1,90 @@
+[
+  {
+    "id": "meta-details",
+    "title": "Details",
+    "blocks": [
+      {
+        "type": "text",
+        "text": "Client: Fictional client"
+      },
+      {
+        "type": "text",
+        "text": "Location: Fictional place"
+      },
+      {
+        "type": "text",
+        "text": "Prepared by: Fictional author"
+      },
+      {
+        "type": "text",
+        "text": "Date: 2026-01-01"
+      }
+    ]
+  },
+  {
+    "id": "overview",
+    "title": "Overview",
+    "blocks": [
+      {
+        "type": "text",
+        "text": "A short fictional overview. This fixture has page images and no transcribed documents."
+      }
+    ]
+  },
+  {
+    "id": "meta-notes",
+    "title": "Notes for reviewers",
+    "blocks": [
+      {
+        "type": "text",
+        "text": "Fictional reviewer note. Not a client project."
+      }
+    ]
+  },
+  {
+    "id": "role-page-preview",
+    "title": "Page preview",
+    "blocks": [
+      {
+        "type": "gallery",
+        "images": [
+          {
+            "mediaId": "page-01",
+            "alt": "Fictional page 1",
+            "caption": "Fictional page 1"
+          },
+          {
+            "mediaId": "page-02",
+            "alt": "Fictional page 2",
+            "caption": "Fictional page 2"
+          },
+          {
+            "mediaId": "page-03",
+            "alt": "Fictional page 3",
+            "caption": "Fictional page 3"
+          },
+          {
+            "mediaId": "page-04",
+            "alt": "Fictional page 4",
+            "caption": "Fictional page 4"
+          },
+          {
+            "mediaId": "page-05",
+            "alt": "Fictional page 5",
+            "caption": "Fictional page 5"
+          },
+          {
+            "mediaId": "page-06",
+            "alt": "Fictional page 6",
+            "caption": "Fictional page 6"
+          },
+          {
+            "mediaId": "page-07",
+            "alt": "Fictional page 7",
+            "caption": "Fictional page 7"
+          }
+        ]
+      }
+    ]
+  }
+]

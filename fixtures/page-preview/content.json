@@ -1,0 +1,29 @@
+{
+  "projectId": "proj_fixture_pages",
+  "submissionId": "sub_fixture_pages",
+  "title": "Fictional page preview",
+  "client": "Fictional client",
+  "location": "Fictional place",
+  "preparedBy": "Fictional author",
+  "date": "2026-01-01",
+  "notesForReviewers": "Fictional reviewer note. Not a client project.",
+  "content": {
+    "summary": "Fictional summary for a page-preview mapping test.",
+    "sections": [
+      {
+        "id": "overview",
+        "heading": "Overview",
+        "body": "A short fictional overview. This fixture has page images and no transcribed documents."
+      }
+    ]
+  },
+  "assets": [
+    { "path": "assets/page-01.png", "role": "page-preview", "note": "Fictional page 1" },
+    { "path": "assets/page-02.png", "role": "page-preview", "note": "Fictional page 2" },
+    { "path": "assets/page-03.png", "role": "page-preview", "note": "Fictional page 3" },
+    { "path": "assets/page-04.png", "role": "page-preview", "note": "Fictional page 4" },
+    { "path": "assets/page-05.png", "role": "page-preview", "note": "Fictional page 5" },
+    { "path": "assets/page-06.png", "role": "page-preview", "note": "Fictional page 6" },
+    { "path": "assets/page-07.png", "role": "page-preview", "note": "Fictional page 7" }
+  ]
+}
