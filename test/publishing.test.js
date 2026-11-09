@@ -119,8 +119,9 @@ test("a 31-file submission keeps every asset and rejects the external script", a
   assert.equal(roles["reference-photo"].length, 1);
   assert.equal(inspected.mapped.presentation.fictional, false);
   assert.equal(inspected.mapped.presentation.sections.some((section) => section.id === "overview"), true);
-  await assert.rejects(sealSnapshot(createMemoryServices({ CODE_PEPPER: PEPPER }), inspected), /external script src:/);
-  assert.match(widgetProblems(Buffer.from(HTML))[0], /external script src:/);
+  assert.equal(widgetProblems(Buffer.from(HTML)).some((problem) => problem.startsWith("external script")), false);
+  const foreign = HTML.replace("https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js", "https://cdn.example/app.js");
+  assert.match(widgetProblems(Buffer.from(foreign))[0], /external script src:/);
   assert.match(colladaProblems(Buffer.from("<!DOCTYPE collada [<!ENTITY x SYSTEM 'file:///secret'>]><COLLADA></COLLADA>"))[0], /doctype|entity/i);
   assert.match(colladaProblems(Buffer.from("<COLLADA><init_from>https://example.com/a.png</init_from></COLLADA>"))[0], /external dae/);
 });

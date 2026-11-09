@@ -114,6 +114,17 @@
       for (const block of section.blocks || []) {
         if (!block || typeof block !== "object") continue;
         if (block.type === "widget" && safeId(block.mediaId, mediaPattern) && safeId(presentation.id, projectPattern)) {
+          const open = el(
+            "a",
+            "open-widget",
+            presentation.fictional === true
+              ? `Open ${typeof block.title === "string" ? block.title : "viewer"} (full screen)`
+              : "Open 3D Kitchen Studio (full screen)",
+          );
+          open.href = `/api/projects/${presentation.id}/widgets/${block.mediaId}/open`;
+          open.target = "_blank";
+          open.rel = "noopener noreferrer";
+          article.append(open);
           const frame = document.createElement("iframe");
           frame.className = "widget-frame";
           frame.sandbox = "allow-scripts allow-downloads";
