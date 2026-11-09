@@ -91,9 +91,9 @@ test("a heavy project uses four tabs and shows one panel", () => {
   tabs[1].listeners.find((listener) => listener.type === "click").fn();
   assert.equal(panels.filter((panel) => !panel.hidden).length, 1);
   assert.equal(panels[1].hidden, false);
-  const css = readFileSync("css/styles.css", "utf8");
-  assert.match(css, /a\.open-widget:hover[\s\S]*color:\s*#f6f1e8/);
-  assert.match(css, /\.project-tab\[aria-selected="true"\]:hover[\s\S]*color:\s*#f6f1e8/);
+  const css = readFileSync("css/portal.css", "utf8");
+  assert.match(css, /a\.open-widget:hover[\s\S]*color:\s*#faf9f6/);
+  assert.match(css, /\.project-tab\[aria-selected="true"\]:hover[\s\S]*color:\s*#faf9f6/);
   assert.match(css, /#page-title\s*\{[^}]*font-size:\s*1\.75rem/);
   assert.match(css, /\.section-prose\s*\{[^}]*max-width:\s*38rem/);
   const cards = nodes.filter((node) => node.className === "section-card");

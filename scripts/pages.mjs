@@ -1,5 +1,5 @@
 // Every HTML page the build ships. The designer site (css/site.css) plus the
-// pages that keep css/styles.css: the private viewer and the hidden legacy pages.
+// private viewer (css/site.css + css/portal.css) and the hidden legacy pages (css/styles.css).
 export const SITE_PAGES = [
   "index.html",
   "work.html",

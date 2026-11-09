@@ -41,7 +41,7 @@ test("the earlier home page and musings are preserved, hidden from search, with 
   assert.match(musings, /If there's one thing I love more than surprises, it's helping a good friend with a surprise proposal!/);
   assert.match(musings, /Just a glimpse at our amazing friendcation to Banff, Canada\. Thanks to our favorite Canadian couple for tying the knot and giving us Californians an excuse to visit your amazing home\./);
   assert.match(musings, /Shoutout to our amazing photographers at Hom Photography and my now husband Chase for his invitation production skills\. Thank you all for making my wedding dreams come true\./);
-  for (const page of [home, musings, readFileSync("view.html", "utf8")]) {
+  for (const page of [home, musings]) {
     assert.match(page, /&copy; AllisonMc 2022\. All Rights Reserved\./);
     assert.match(page, /https:\/\/www\.behance\.net\/gallery\/27744549\/Allison-Gay-Portfolio/);
     assert.match(page, /https:\/\/www\.linkedin\.com\/in\/allisongaymcelroy\//);

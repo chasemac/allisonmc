@@ -319,10 +319,10 @@ test("flow HTML is built with text nodes, resolved figures, and a scrolling tabl
   const sections = nodes.find((node) => node.id === "panel-sections");
   assert.equal(drawings.textContent.includes("Invented west wall"), true);
   assert.equal(sections ? sections.textContent.includes("Invented west wall") : false, false);
-  const css = readFileSync("css/styles.css", "utf8");
+  const css = readFileSync("css/portal.css", "utf8");
   assert.match(css, /\.flow-table-wrap\s*\{[^}]*overflow-x:\s*auto/);
   assert.match(css, /\.flow-zoom img\s*\{[^}]*width:\s*auto/);
   assert.match(css, /\.flow-table td::before\s*\{[^}]*content:\s*attr\(data-label\)/);
   assert.match(css, /@media \(max-width: 799px\)[\s\S]*\.flow-table caption\s*\{[^}]*display:\s*block/);
-  assert.match(css, /--font:\s*"Lato"/);
+  assert.match(readFileSync("css/site.css", "utf8"), /--font:\s*"Lato"/);
 });
