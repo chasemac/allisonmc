@@ -12,7 +12,7 @@ Agent constraints are in [AGENTS.md](AGENTS.md). Runtime detail is in [docs/runb
 - `/legacy-home.html` and `/musings.html` — the earlier home page and musings, kept but hidden (`noindex`, not linked)
 - `/view.html` — code form for a private project, also available as `/view` on Vercel
 
-Typography is Lato (300, 400, 700, and italics) on every page: the designer site uses `css/site.css`, and the project viewer and legacy pages use `css/styles.css`. Do not add another font family unless a person asks.
+Typography is Lato (300, 400, 700, and italics) on every page: the designer site uses `css/site.css`, the project viewer uses `css/site.css` plus `css/portal.css`, and the hidden legacy pages use `css/styles.css`. Do not add another font family unless a person asks.
 
 ## Hosting
 

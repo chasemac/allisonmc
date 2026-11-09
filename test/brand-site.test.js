@@ -213,3 +213,22 @@ test("hidden legacy pages are preserved, not linked and not indexed", () => {
     assert.equal(/href="(musings|legacy-home)\.html"/.test(read(page)), false, page);
   }
 });
+
+test("the client project viewer wears the brand header, nav and footer and keeps its hooks", () => {
+  const view = read("view.html");
+  const about = read("about.html");
+  const header = (html) => html.slice(html.indexOf('<header class="site-header">'), html.indexOf("</header>")).replace(/ aria-current="page"/g, "");
+  assert.equal(header(view), header(about), "same header as the public pages");
+  assert.match(view, /<footer class="site-footer">[\s\S]*wordmark-stacked-white/);
+  assert.match(view, /<link href="css\/site\.css" rel="stylesheet" \/>\s*<link href="css\/portal\.css" rel="stylesheet" \/>/);
+  assert.equal(view.includes("css/styles.css"), false);
+  assert.equal(/musings|behance|Musings/i.test(view), false, "no old Musings or Behance links");
+  assert.equal(/leave/i.test(visible(view)), false, "no Leave button");
+  assert.match(view, /<meta name="robots" content="noindex" \/>/);
+  for (const id of ["page-kicker", "page-title", "page-subtitle", "status", "gate", "access-hint", "access-form", "project-code", "access-submit", "form-error", "project", "lightbox"]) {
+    assert.match(view, new RegExp(`id="${id}"`), id);
+  }
+  assert.match(view, /<script src="js\/view\.js"><\/script>/);
+  const css = readFileSync("css/portal.css", "utf8");
+  assert.equal(/^\s*(label|input|body|html|\.site-header|\.nav|\.site-footer)\b[^{]*\{/m.test(css), false, "portal.css leaves the shared header, nav, footer and bare elements to site.css");
+});

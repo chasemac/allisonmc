@@ -54,10 +54,11 @@ test("public images declare alt text and a stable aspect ratio", () => {
       }
     }
   }
+  // view.html: the two brand wordmarks plus the empty lightbox image that view.js fills in.
   const viewImages = images(readFileSync("view.html", "utf8"));
-  assert.equal(viewImages.length, 1);
-  assert.equal(attr(viewImages[0], "alt"), "");
-  assert.equal(attr(viewImages[0], "src"), null);
+  assert.equal(viewImages.length, 3);
+  assert.deepEqual(viewImages.filter((tag) => attr(tag, "src") === null).map((tag) => attr(tag, "alt")), [""]);
+  assert.equal(viewImages.filter((tag) => /^assets\/img\/wordmark-/.test(attr(tag, "src") || "")).length, 2);
 });
 
 test("musings photos use sized WebP and lazy-load below the first image", () => {
@@ -87,9 +88,10 @@ test("musings photos use sized WebP and lazy-load below the first image", () => 
 });
 
 test("Lato is the only webfont and it swaps instead of hiding text", () => {
-  for (const sheet of ["css/styles.css", "css/site.css"]) {
+  for (const sheet of ["css/styles.css", "css/site.css", "css/portal.css"]) {
     const css = readFileSync(sheet, "utf8");
-    assert.match(css, /--font:\s*"Lato",\s*-apple-system/, sheet);
+    // portal.css loads after site.css and uses its --font.
+    if (sheet !== "css/portal.css") assert.match(css, /--font:\s*"Lato",\s*-apple-system/, sheet);
     const withoutStack = css.replace(/--font:\s*[^;]+;/, "");
     assert.equal(/Fraunces|Outfit|Georgia|Garamond|Merriweather|Playfair|Montserrat|Inter\b/.test(withoutStack), false, sheet);
     for (const declared of withoutStack.matchAll(/font-family:\s*([^;]+);/g)) {

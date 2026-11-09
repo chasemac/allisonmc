@@ -87,7 +87,7 @@ Real client files do not belong in this repository, in `dist/`, or in `assets/`.
 
 ## Typography
 
-The viewer and the hidden legacy pages use `css/styles.css`; the designer site uses `css/site.css`. The family is Lato 300, 400, and 700, including italics, with a system sans-serif fallback. Do not reintroduce Fraunces, Outfit, or another family unless a person asks.
+The hidden legacy pages use `css/styles.css`; the designer site uses `css/site.css`; the viewer uses `css/site.css` plus `css/portal.css`. The family is Lato 300, 400, and 700, including italics, with a system sans-serif fallback. Do not reintroduce Fraunces, Outfit, or another family unless a person asks.
 
 ## Checks before a preview is shared
 

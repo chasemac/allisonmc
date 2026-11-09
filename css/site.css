@@ -1,6 +1,6 @@
 /* Allison McElroy Design: public site. Palette "Evergreen + Slate" and the
    Lato 300/400/700 system from Allison's brand toolkit (Nov 9, 2026).
-   view.html, musings.html and legacy-home.html keep css/styles.css. */
+   view.html adds css/portal.css; musings.html and legacy-home.html keep css/styles.css. */
 :root {
   --soft-white: #faf9f6;
   --ivory: #f3efe7;
