@@ -138,3 +138,13 @@ test("static asset caching is long and HTML, CSS, and JS stay revalidated", () =
   assert.equal(header("/css/(.*)", "Cache-Control").includes("immutable"), false);
   assert.equal(header("/js/(.*)", "Cache-Control").includes("immutable"), false);
 });
+
+test("mobile nav drawer links fill the drawer width at a 48px tap height", () => {
+  const css = readFileSync("css/styles.css", "utf8");
+  const mobile = css.slice(css.indexOf("@media (max-width: 799px)"));
+  const rule = mobile.match(/\n  \.nav a \{([^}]*)\}/);
+  assert.ok(rule, "mobile .nav a rule");
+  assert.match(rule[1], /width:\s*100%/);
+  assert.match(rule[1], /min-height:\s*48px/);
+  assert.match(mobile, /\.nav-toggle:checked ~ ul li \{\s*width:\s*100%;/);
+});
