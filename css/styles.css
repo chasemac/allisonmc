@@ -940,8 +940,16 @@ dialog img {
     border: 1px solid var(--ink);
   }
 
+  .nav-toggle:checked ~ ul li {
+    width: 100%;
+  }
+
+  /* Drawer links span the drawer width at 48px tall so a thumb can't miss them. */
   .nav a {
-    padding: 0.15rem 1rem;
+    display: flex;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 1rem;
   }
 
   .intro,
