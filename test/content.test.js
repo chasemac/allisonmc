@@ -3,9 +3,10 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import test from "node:test";
+import { PAGES } from "../scripts/pages.mjs";
 import { TEST_FIXTURE_CODE } from "../lib/demo-fixture.js";
 
-const pages = ["index.html", "musings.html", "view.html"];
+const pages = PAGES;
 
 function contrast(a, b) {
   const lum = ([r, g, b]) => {
@@ -29,8 +30,8 @@ test("agent and publishing docs stay free of the fixture code and credentials", 
   assert.equal(/BLOB_READ_WRITE_TOKEN\s*=\s*\S+/.test(docs), false);
 });
 
-test("public pages keep Allison's existing copy, links, and photo", () => {
-  const home = readFileSync("index.html", "utf8");
+test("the earlier home page and musings are preserved, hidden from search, with Allison's copy, links, and photo", () => {
+  const home = readFileSync("legacy-home.html", "utf8");
   const musings = readFileSync("musings.html", "utf8");
   assert.match(home, /I grew up regularly relocating with my family to various cities mainly within Texas and Oklahoma\. The familiarity to transition is what began to shape my character- eventually instilling within me a desire for great adventure and even greater design\. Several years ago my big adventure to Master Architecture lead me to finally put down roots in Southern California\./);
   assert.match(home, /Dreamer/);
@@ -45,6 +46,7 @@ test("public pages keep Allison's existing copy, links, and photo", () => {
     assert.match(page, /https:\/\/www\.behance\.net\/gallery\/27744549\/Allison-Gay-Portfolio/);
     assert.match(page, /https:\/\/www\.linkedin\.com\/in\/allisongaymcelroy\//);
   }
+  for (const page of [home, musings]) assert.match(page, /<meta name="robots" content="noindex" \/>/);
   const view = readFileSync("view.html", "utf8");
   assert.equal(/<form[\s>]/i.test(view), false);
   assert.equal(view.includes('name="code"'), false);
@@ -81,7 +83,7 @@ test("pages link to real files and do not load the old template", () => {
   for (const match of readFileSync("musings.html", "utf8").matchAll(/<img [^>]*>/g)) {
     assert.match(match[0], /alt="[^"]+"/);
   }
-  assert.match(readFileSync("index.html", "utf8"), /alt="[^"]+"/);
+  assert.match(readFileSync("legacy-home.html", "utf8"), /alt="[^"]+"/);
   const css = readFileSync("css/styles.css", "utf8");
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion/);
@@ -95,7 +97,7 @@ test("pages link to real files and do not load the old template", () => {
   assert.ok(contrast(colors.cypress, "#fffdf9") >= 4.5);
   assert.ok(contrast(colors.danger, colors.paper) >= 4.5);
   const lato = "family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700";
-  for (const page of ["index.html", "musings.html", "view.html", "404.html"]) {
+  for (const page of PAGES) {
     const html = readFileSync(page, "utf8");
     assert.equal(html.includes(lato), true, page);
     assert.equal(/Fraunces|Outfit/.test(html), false, page);
