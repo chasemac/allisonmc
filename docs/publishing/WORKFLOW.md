@@ -48,7 +48,7 @@ Uploading the same submission id again with different bytes is an error. A corre
 node scripts/projects.mjs import-drive --dir /path/to/drive-snapshot --out /path/to/fresh-stage
 ```
 
-`--out` is a new directory. Its parent is a real directory, not a symlink. On macOS, `/tmp` is a symlink, so pick a folder you created. The command copies the snapshot there and leaves the source bytes unchanged. It refuses a symlink, a path that leaves the folder, and system junk: `.DS_Store`, the macOS `Icon` file, `desktop.ini`, a `~$` Office lock file, a hidden name, and Google shortcut stubs (`.gdoc`, `.gsheet`, `.gslides`, `.gform`, `.gdraw`). `project-access.json` inside the submission is refused. Codes stay in the separate access file. The command does not read or print them.
+`--out` is a new directory. Its parent is a real directory, not a symlink. On macOS, `/tmp` is a symlink, so pick a folder you created. The command copies the snapshot there and leaves the source bytes unchanged. It refuses a symlink, a path that leaves the folder, and system junk: `.DS_Store`, the macOS `Icon` file, `desktop.ini`, a `~$` Office lock file, a macOS AppleDouble file (`._*`), a hidden name, and Google shortcut stubs (`.gdoc`, `.gsheet`, `.gslides`, `.gform`, `.gdraw`). An AppleDouble refusal names that file and tells you to run `dot_clean` on the snapshot folder, then import again. `project-access.json` inside the submission is refused. Codes stay in the separate access file. The command does not read or print them.
 
 The command reads the tree twice. If a file's size or SHA-256 changes between those reads, it stops with `still syncing, try again` and writes nothing. Run it again when the copy has finished. A missing `READY.json` stops with `READY.json is missing`. There is no wait loop.
 
@@ -72,7 +72,7 @@ AMC_TARGET=production node scripts/projects.mjs publish --store remote --project
 
 Section `body` stays one string. Blank lines, `- ` lists, `## ` subheadings, and `**bold**` are layout marks, not HTML. The page escapes the characters and does not run markup from the string. `summary` is the one line on a collapsed section card. Leave it out and the page uses the first sentence. A shape example is [templates/content.example.json](../../templates/content.example.json). The marks are written out in [templates/section-text.md](../../templates/section-text.md).
 
-`documents` is how a concept package becomes HTML that reflows. Each document is `{ id, heading, kicker, summary, blocks }`. `kicker` and `summary` are optional. `blocks` is an ordered list of `heading`, `paragraph`, `list`, `table`, `callout`, `figure`, and `source`. The viewer puts that page on Drawings. A `figure` path must use role `figure`. A `source` path must use role `source-page` and is the collapsed original page. Every file with those roles has to be referenced. They do not also appear as a gallery. Keep using `page-preview` only when the flat PNG is the page itself. Keep the PDF as `downloadable-pdf`.
+`documents` is how a concept package becomes HTML that reflows. Each document is `{ id, heading, kicker, summary, blocks }`. `kicker` and `summary` are optional. `summary` is stored on the mapped section. Drawings shows the kicker, the heading, and the blocks with the page already open, so it does not render `summary`. Put every sentence a reader needs in `blocks`. Keeping the field means a snapshot that already includes it still validates. `blocks` is an ordered list of `heading`, `paragraph`, `list`, `table`, `callout`, `figure`, and `source`. The viewer puts that page on Drawings. A `figure` path must use role `figure`. A `source` path must use role `source-page` and is the collapsed original page. Every file with those roles has to be referenced. They do not also appear as a gallery. Keep using `page-preview` only when the flat PNG is the page itself and the submission has no `documents`. When `content.documents` and `page-preview` assets are both present, `inspect` prints `warning:` and copies that text into those assets' `problems` cells. The warning says to use `source-page` for those PNGs. `publishable` stays `yes`, so a package that intentionally keeps both can still be sealed. A snapshot with `page-preview` and no `documents` does not warn and stays publishable. Keep the PDF as `downloadable-pdf`.
 
 Antigravity and Muse should transcribe the words, numbers, and labels into those blocks. Photos, renderings, plans, and elevations are cropped figures. Text does not stay baked into an image unless it is a dimension or name printed inside a drawing, and those words are repeated in the HTML. Do not invent a measurement. Unknown fields, unknown block types, and over-long text fail `inspect`. The limits are in [templates/section-text.md](../../templates/section-text.md).
 
@@ -91,7 +91,17 @@ Every asset path must exist, and every file except `READY.json` and `DERIVED.jso
 
 A validated handoff of 31 files is `content.json`, one HTML widget, two DAE files, four PDFs, 21 PNGs, and two JPEGs. The roles on those images come from `content.json`. This repository does not contain that handoff. Publishing it is the CLI sequence below, from a local copy, not a commit.
 
-The viewer adds a details section and a notes section when those fields are present, then one section per role that has files. Generated section ids are `meta-details`, `meta-notes`, and `role-<role>`. A content section must not use those ids. The mapped page is `fictional: false`. Text is rendered as text. A widget is a link to its full page, not an embedded frame. DAE and PDF entries are authenticated downloads.
+The mapped page is `fictional: false`. Text is rendered as text. A widget is a link to its full page, not an embedded frame. DAE and PDF entries are authenticated downloads.
+
+Sections are mapped in this order:
+
+- `meta-details` when client, location, prepared by, or date has text.
+- Each `content.sections` entry, keeping that section's id.
+- `meta-notes` when `notesForReviewers` has text.
+- Each `content.documents` entry, as its own Drawings section, using the document id. Those sections are inserted at the `page-preview` point in the role order, ahead of a Page preview gallery when that gallery exists. `figure` and `source-page` files do not get a role section. A document block references them.
+- One section per other role that has files, with id `role-<role>`.
+
+`meta-details`, `meta-notes`, and `role-<role>` are generated ids. A content section id and a document id must not use them.
 
 ## Widget and the derived snapshot
 
@@ -146,7 +156,7 @@ Printed receipts:
 | Command | Prints |
 | --- | --- |
 | `import-drive` | the `inspect` receipt, plus `staged` and `sealed`. With `--seal`, also `idempotent`. `published` stays `false` |
-| `inspect` | `project`, `submission`, `snapshotDigest`, `manifestDigest`, `manifestDigestMatches`, `files`, `publishable`, `published: false`, then one tab-separated row per asset: `path`, `role`, `size`, the first 12 hex characters of that file's `sha256`, and `problems` (`none` when the asset has none). `content.json` is included in `files` and is not an asset row. The command does not print codes, notes, or file bytes. A database URL, pepper, session cookie, or JSON code inside a problem is redacted. |
+| `inspect` | `project`, `submission`, `snapshotDigest`, `manifestDigest`, `manifestDigestMatches`, `files`, `publishable`, `published: false`, then one tab-separated row per asset: `path`, `role`, `size`, the first 12 hex characters of that file's `sha256`, and `problems` (`none` when the asset has none). When `content.documents` and `page-preview` assets are both present, the receipt also prints `warning:` and the same text in those assets' `problems` cells. `publishable` stays `yes`. `content.json` is included in `files` and is not an asset row. The command does not print codes, notes, or file bytes. A database URL, pepper, session cookie, or JSON code inside a problem is redacted. |
 | `derive` | `inputDigest`, `outputDigest`, `published: false`, plus `DERIVED.json` in the output directory |
 | `seal` | `snapshotDigest`, `idempotent`, `published: false` |
 | `approve` | `approved`, `published: false` |

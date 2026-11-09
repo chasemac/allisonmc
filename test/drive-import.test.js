@@ -600,6 +600,23 @@ test("project-access.json is refused unread", async () => {
   }
 });
 
+test("an AppleDouble file is refused with its path and a dot_clean hint", async () => {
+  const { source, out } = await pair();
+  await writeSnapshot(source);
+  const relative = "assets/._photo.png";
+  const full = path.join(source, relative);
+  await writeFile(full, MARKER);
+  await assert.rejects(importDriveSnapshot(source, out), (err) => {
+    assert.equal(
+      err.message,
+      `refused AppleDouble file: ${relative}. Remove it with dot_clean on the snapshot folder, then import again.`,
+    );
+    assert.equal(err.message.includes(MARKER), false);
+    return true;
+  });
+  assert.equal(await exists(out), false);
+});
+
 test("system junk and Google shortcut stubs are refused", async () => {
   const cases = [
     [".DS_Store", "refused .DS_Store"],

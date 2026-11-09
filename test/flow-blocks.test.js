@@ -149,6 +149,7 @@ test("documents map onto Drawings and older submissions stay plain text", () => 
   assert.equal(doc.blocks[0].type, "flow");
   assert.equal(doc.blocks[0].blocks[2].mediaId, "plan");
   assert.equal(doc.blocks[0].blocks[2].path, undefined);
+  assert.deepEqual(mapped.warnings, []);
   assert.equal(mapped.presentation.sections.some((section) => section.id === "role-figure"), false);
   assert.equal(mapped.presentation.sections.some((section) => section.id === "role-source-page"), false);
   assert.equal(overviewStill(mapped), "Synthetic section body that stays plain text.");
@@ -193,6 +194,28 @@ test("documents map onto Drawings and older submissions stay plain text", () => 
       sections: [{ id: "overview", heading: "Overview", body: "Body.", blocks: [] }],
     },
   }), new Map()), /unexpected section field/);
+  assert.throws(() => mapSubmission(submission({
+    content: {
+      summary: "Synthetic summary for a private viewing test.",
+      sections: [{ id: "overview", heading: "Overview", body: "Synthetic section body that stays plain text." }],
+      documents: [{
+        id: "concept-p1",
+        heading: "Page",
+        blocks: [{ type: "paragraph", text: "Text.", html: "<b>no</b>" }],
+      }],
+    },
+  }), new Map()), (err) => err instanceof SchemaError && err.message === "unexpected flow field");
+  assert.throws(() => mapSubmission(submission({
+    content: {
+      summary: "Synthetic summary for a private viewing test.",
+      sections: [{ id: "overview", heading: "Overview", body: "Synthetic section body that stays plain text." }],
+      documents: [{
+        id: "concept-p1",
+        heading: "Page",
+        blocks: [{ type: "list", ordered: false, items: ["One"], extra: true }],
+      }],
+    },
+  }), new Map()), /unexpected flow field/);
 });
 
 function overviewStill(mapped) {
