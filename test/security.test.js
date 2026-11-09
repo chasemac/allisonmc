@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import { readFileSync } from "node:fs";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -8,7 +9,7 @@ import vm from "node:vm";
 import { main } from "../lib/cli.js";
 import { lookupHash, sessionHash } from "../lib/codes.js";
 import { TEST_FIXTURE_CODE, seedDemo } from "../lib/demo-fixture.js";
-import { blobCredentials, createBlobMedia } from "../lib/blob-media.js";
+import { PRIVATE_CANARY_PATH, blobCredentials, createBlobMedia } from "../lib/blob-media.js";
 import { loadEnvFile } from "../lib/cli.js";
 import { createPostgresStore } from "../lib/postgres-store.js";
 import { handle } from "../lib/router.js";
@@ -444,12 +445,39 @@ test("blob credentials come from the selected env and hosted oidc is refreshed p
     const dir = await mkdtemp(path.join(tmpdir(), "amc-env-"));
     const file = path.join(dir, "env");
     const { writeFileSync } = await import("node:fs");
-    writeFileSync(file, "BLOB_READ_WRITE_TOKEN=loaded-token\nBLOB_STORE_ID=store_loaded\n");
-    const loaded = loadEnvFile({ ...process.env, AMC_ENV_FILE: file });
+    writeFileSync(file, "BLOB_READ_WRITE_TOKEN=fresh-rw-token\nBLOB_STORE_ID=store_selected\n");
+    const loaded = loadEnvFile({
+      ...process.env,
+      VERCEL_OIDC_TOKEN: "expired-inherited-oidc",
+      BLOB_STORE_ID: "store_inherited",
+      BLOB_READ_WRITE_TOKEN: "process-token",
+      AMC_ENV_FILE: file,
+    });
+    assert.equal(loaded.VERCEL_OIDC_TOKEN, "expired-inherited-oidc");
+    loaded.VERCEL = "";
     const creds = await blobCredentials(loaded);
-    assert.equal(creds.token, "loaded-token");
-    assert.equal(creds.storeId, "store_loaded");
+    assert.equal(creds.token, "fresh-rw-token");
+    assert.equal(creds.storeId, "store_selected");
     assert.equal(creds.oidcToken, undefined);
+    await assert.rejects(() =>
+      blobCredentials(
+        {
+          VERCEL: "1",
+          BLOB_STORE_ID: "store_hosted",
+          VERCEL_OIDC_TOKEN: "expired-inherited-oidc",
+          BLOB_READ_WRITE_TOKEN: "fresh-rw-token",
+        },
+        async () => "",
+      ),
+    );
+    const explicit = await blobCredentials({
+      BLOB_AUTH: "oidc",
+      BLOB_STORE_ID: "store_selected",
+      VERCEL_OIDC_TOKEN: "chosen-oidc",
+      BLOB_READ_WRITE_TOKEN: "fresh-rw-token",
+    });
+    assert.equal(explicit.oidcToken, "chosen-oidc");
+    assert.equal(explicit.token, undefined);
     let issued = 0;
     const first = await blobCredentials(
       { VERCEL: "1", BLOB_STORE_ID: "store_loaded", BLOB_READ_WRITE_TOKEN: "loaded-token" },
@@ -498,6 +526,88 @@ test("a media outage grants no session and a failed logout keeps it", async () =
   const again = await handle(new Request("http://127.0.0.1/api/session", { headers: { cookie } }), { services: open, env });
   assert.equal(again.status, 200);
   assert.equal((await again.json()).authenticated, true);
+});
+
+test("a reachable public store or a missing private canary grants no session", async () => {
+  const canary = Buffer.from("private-canary-bytes");
+  const hash = crypto.createHash("sha256").update(canary).digest("hex");
+  const blobEnv = {
+    BLOB_READ_WRITE_TOKEN: "selected-token",
+    BLOB_STORE_ID: "store_selected",
+    BLOB_PRIVATE_CANARY_SHA256: hash,
+  };
+  function clientFor(mode) {
+    const calls = [];
+    const client = {
+      async list() {
+        calls.push({ op: "list" });
+        return { blobs: [{ pathname: "public.png", url: "https://store.public.blob.vercel-storage.com/public.png" }] };
+      },
+      async get(pathname, options) {
+        calls.push({ op: "get", pathname, access: options.access });
+        if (options.access === "public") {
+          return { statusCode: 200, stream: new Blob(["public-object"]).stream(), blob: { contentType: "text/plain" } };
+        }
+        if (mode === "private" && options.access === "private" && pathname === PRIVATE_CANARY_PATH) {
+          return { statusCode: 200, stream: new Blob([canary]).stream(), blob: { contentType: "text/plain" } };
+        }
+        if (mode === "auth") throw new Error("unauthorized");
+        if (mode === "mismatch" && options.access === "private") {
+          return { statusCode: 200, stream: new Blob(["different-canary"]).stream(), blob: { contentType: "text/plain" } };
+        }
+        return null;
+      },
+    };
+    return { client, calls };
+  }
+  async function attempt(mode, ip) {
+    const services = await setup();
+    const { client, calls } = clientFor(mode);
+    services.media = createBlobMedia({ env: blobEnv, client });
+    const response = await handle(accessRequest(TEST_FIXTURE_CODE, { ip }), { services, env });
+    const body = await response.text();
+    return { response, body, calls };
+  }
+  const reachablePublic = await attempt("public", "203.0.113.80");
+  assert.equal(reachablePublic.response.status, 503);
+  assert.equal(reachablePublic.response.headers.get("set-cookie"), null);
+  assert.equal(reachablePublic.body.includes("Northglass"), false);
+  assert.equal(reachablePublic.calls.some((call) => call.access === "private"), true);
+  assert.equal(reachablePublic.calls.some((call) => call.access === "public"), false);
+
+  const missing = await attempt("missing", "203.0.113.81");
+  assert.equal(missing.response.status, 503);
+  assert.equal(missing.response.headers.get("set-cookie"), null);
+  assert.equal(missing.calls.some((call) => call.access === "private" && call.pathname === PRIVATE_CANARY_PATH), true);
+
+  const mismatch = await attempt("mismatch", "203.0.113.82");
+  assert.equal(mismatch.response.status, 503);
+  assert.equal(mismatch.response.headers.get("set-cookie"), null);
+
+  const unauthorized = await attempt("auth", "203.0.113.83");
+  assert.equal(unauthorized.response.status, 503);
+  assert.equal(unauthorized.response.headers.get("set-cookie"), null);
+
+  const accepted = await attempt("private", "203.0.113.84");
+  assert.equal(accepted.response.status, 200);
+  assert.match(accepted.response.headers.get("set-cookie") || "", /HttpOnly/);
+  assert.equal(JSON.parse(accepted.body).project.id, "demo-northglass");
+
+  const unconfigured = await handle(accessRequest(TEST_FIXTURE_CODE, { ip: "203.0.113.85" }), {
+    env: {
+      DATA_STORE: "postgres",
+      MEDIA_STORE: "blob",
+      DATABASE_URL: "postgres://example.invalid/db",
+      CODE_PEPPER: PEPPER,
+      BLOB_READ_WRITE_TOKEN: "selected-token",
+      BLOB_STORE_ID: "store_selected",
+      RATE_LIMIT_MAX: "8",
+      RATE_LIMIT_WINDOW_MS: "600000",
+    },
+    log() {},
+  });
+  assert.equal(unconfigured.status, 503);
+  assert.equal(unconfigured.headers.get("set-cookie"), null);
 });
 
 test("public paths and the operator state file do not disclose codes", async () => {

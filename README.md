@@ -50,7 +50,7 @@ npm test
 npm start
 ```
 
-`npm start` serves the public pages and the fictional demo on `http://127.0.0.1:4173` with the memory adapter. It does not contact Vercel, Neon, or Blob. `npm test` is the same kind of local check: in-memory data and a stub Blob client, not a hosted integration.
+`npm start` serves the public pages and the fictional demo on `http://127.0.0.1:4173` with the memory adapter. It does not contact Vercel, Neon, or Blob. `npm test` is the same kind of local check: in-memory data and a stub Blob client, not a hosted integration. A real preview also needs the private Blob canary described in [docs/runbook.md](docs/runbook.md). The canary is not created here.
 
 ## Mail and DNS
 

@@ -14,7 +14,7 @@ Codes are 32 random bytes. Postgres stores only `HMAC-SHA256(CODE_PEPPER, code)`
 
 Rate limiting is an atomic Postgres upsert shared by every function instance. The default is 8 attempts per 10 minutes per IP. If that write fails, or the database is not configured, the attempt is denied.
 
-Media bytes live in a private Blob store under `projects/{projectId}/media/{mediaId}`. The browser never receives a Blob URL. The function streams the object only after the session check. Before a session cookie is set, the server asks the media adapter to confirm that private storage is reachable. If that check fails, no session is granted. A later media error on an existing session also fails closed and returns no bytes.
+Media bytes live in a private Blob store under `projects/{projectId}/media/{mediaId}`. The browser never receives a Blob URL. The function streams the object only after the session check. Before a session cookie is set, the server reads a provisioned canary with `access: "private"` and checks its SHA-256. A store that merely answers, including a reachable public store, does not pass. A missing canary, a hash mismatch, the wrong store, or an auth failure grants no session. A later media error on an existing session also fails closed and returns no bytes.
 
 The upload check is a short signature prefix, not a full file parse and not a sanitizer. JPEG, PNG, WebP, and PDF prefixes are accepted. SVG, HTML, script, Markdown, and MDX text do not match those prefixes and are refused. A matching prefix does not prove the rest of the file is harmless. Images are served with nosniff and a locked content security policy. PDFs are downloaded rather than shown as active page content. A project file can contain plain text, galleries, private files, and curated `https` links. It cannot contain an HTML or script block. Markdown is not rendered.
 
@@ -25,10 +25,11 @@ The upload check is a short signature prefix, not a full file parse and not a sa
 Nothing below is created by the repository.
 
 1. A Vercel project for this repo, framework Other, build `node scripts/prepare-static.mjs`, output `dist`. Use a preview deployment. Do not add `allisonmc.com`.
-2. A **private** Blob store connected to that project (`access: private`). Public Blob is the wrong store. Connecting it provides `BLOB_STORE_ID` and OIDC on Vercel. Create a read-write token only for the operator laptop and keep it in `.env.local`.
-3. A Neon Postgres database from the Vercel Marketplace, or an existing database. Put its connection string in `DATABASE_URL`. The operator role needs to create the tables in this runbook.
-4. `CODE_PEPPER`: at least 32 random characters, different in preview and production, stored only as a Vercel environment variable.
-5. `DATA_STORE=postgres` and `MEDIA_STORE=blob` on the Vercel project.
+2. A Blob store created with **private** access and connected to that project. A public store is rejected. On Vercel, the connection provides `BLOB_STORE_ID`. Each request asks for a fresh OIDC token. A laptop uses `BLOB_READ_WRITE_TOKEN` in `.env.local` for that same private store. An inherited `VERCEL_OIDC_TOKEN` is not used for the laptop unless `BLOB_AUTH=oidc` is set on purpose. Do not point the token at a different store from the one in `BLOB_STORE_ID`.
+3. A small private canary object at `projects/_access/private-canary`. Put its SHA-256 hex digest in `BLOB_PRIVATE_CANARY_SHA256`. The file itself stays in the private store, not in git. Sessions stay closed until a private read of that object matches the digest. This repository does not create the store or the canary.
+4. A Neon Postgres database from the Vercel Marketplace, or an existing database. Put its connection string in `DATABASE_URL`. The operator role needs to create the tables in this runbook.
+5. `CODE_PEPPER`: at least 32 random characters, different in preview and production, stored only as a Vercel environment variable.
+6. `DATA_STORE=postgres` and `MEDIA_STORE=blob` on the Vercel project. `BLOB_PRIVATE_CANARY_SHA256` is required wherever `MEDIA_STORE=blob`. On Vercel, `BLOB_STORE_ID` is required too. Do not set `BLOB_AUTH` unless a laptop must use a static OIDC token instead of `BLOB_READ_WRITE_TOKEN`.
 
 `npm start` does not use these services. A preview without them serves the public pages and returns 503 for `/api/access`.
 
