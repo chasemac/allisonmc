@@ -97,6 +97,9 @@ a:hover {
 .mark {
   color: var(--ink);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -118,14 +121,28 @@ a:hover {
 
 .nav label {
   cursor: pointer;
+  min-width: 44px;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 0.35rem 0.85rem;
   border: 1px solid var(--ink);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-size: 0.72rem;
+}
+
+.nav-label-close {
+  display: none;
+}
+
+.nav-toggle:checked + label .nav-label-open {
+  display: none;
+}
+
+.nav-toggle:checked + label .nav-label-close {
+  display: inline;
 }
 
 .nav-toggle:focus-visible + label {
@@ -233,6 +250,12 @@ h1,
   margin: 1.6rem 0 0;
 }
 
+.bio a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .jump {
   display: flex;
   flex-wrap: wrap;
@@ -247,6 +270,12 @@ h1,
   text-underline-offset: 0.28em;
 }
 
+.jump a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .portrait {
   margin: 0;
   justify-self: end;
@@ -255,11 +284,17 @@ h1,
   position: relative;
 }
 
+.portrait picture {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
 .portrait img {
   display: block;
   width: 100%;
-  position: relative;
-  z-index: 1;
+  height: auto;
 }
 
 .portrait::after {
@@ -298,10 +333,16 @@ h1,
   margin: 0;
 }
 
-.entry img {
+.entry picture {
   grid-column: 2;
   grid-row: 1;
+  display: block;
+  min-width: 0;
+}
+
+.entry img {
   width: 100%;
+  height: auto;
   display: block;
 }
 
@@ -319,7 +360,7 @@ h1,
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   margin-top: clamp(3rem, 8vw, 5.5rem);
   padding-top: 1.15rem;
   border-top: 1px solid var(--line);
@@ -330,6 +371,9 @@ h1,
 
 .site-footer a {
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .gate {
@@ -347,6 +391,12 @@ label {
   font-size: 0.78rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.gate label {
+  display: flex;
+  align-items: flex-end;
+  min-height: 44px;
 }
 
 input {
@@ -904,7 +954,7 @@ dialog img {
     max-width: 18rem;
   }
 
-  .entry img,
+  .entry picture,
   .entry figcaption {
     grid-column: 1;
     grid-row: auto;
