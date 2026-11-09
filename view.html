@@ -31,15 +31,16 @@
       <main id="content">
         <p class="page-kicker" id="page-kicker">Private viewing</p>
         <h1 id="page-title" tabindex="-1">Project access</h1>
+        <p id="status" class="form-error" role="alert"></p>
         <div id="gate" class="gate">
           <p>Enter the code you were given to open one project.</p>
-          <form id="access-form">
+          <div id="access-form">
             <label for="project-code">Project code</label>
-            <input id="project-code" name="code" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required minlength="20" maxlength="200" />
-            <button class="primary-button" type="submit">View project</button>
+            <input id="project-code" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" minlength="20" maxlength="200" />
+            <button class="primary-button" id="access-submit" type="button">View project</button>
             <p id="form-error" class="form-error" role="alert"></p>
-          </form>
-          <noscript class="noscript"><p>Project viewing needs JavaScript enabled.</p></noscript>
+          </div>
+          <noscript><p class="noscript">Project viewing needs JavaScript. This page does not send a code unless that script is running.</p></noscript>
         </div>
         <div id="project" hidden></div>
       </main>

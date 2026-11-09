@@ -14,7 +14,11 @@ Codes are 32 random bytes. Postgres stores only `HMAC-SHA256(CODE_PEPPER, code)`
 
 Rate limiting is an atomic Postgres upsert shared by every function instance. The default is 8 attempts per 10 minutes per IP. If that write fails, or the database is not configured, the attempt is denied.
 
-Media bytes live in a private Blob store under `projects/{projectId}/media/{mediaId}`. The browser never receives a Blob URL. The function streams the object only after the session check. Allowed uploads are JPEG, PNG, WebP, and PDF, recognized by file signature. SVG, HTML, and scripts are rejected. A project file can contain text, galleries, private files, and curated `https` links. It cannot contain an HTML or script block.
+Media bytes live in a private Blob store under `projects/{projectId}/media/{mediaId}`. The browser never receives a Blob URL. The function streams the object only after the session check. Before a session cookie is set, the server asks the media adapter to confirm that private storage is reachable. If that check fails, no session is granted. A later media error on an existing session also fails closed and returns no bytes.
+
+The upload check is a short signature prefix, not a full file parse and not a sanitizer. JPEG, PNG, WebP, and PDF prefixes are accepted. SVG, HTML, script, Markdown, and MDX text do not match those prefixes and are refused. A matching prefix does not prove the rest of the file is harmless. Images are served with nosniff and a locked content security policy. PDFs are downloaded rather than shown as active page content. A project file can contain plain text, galleries, private files, and curated `https` links. It cannot contain an HTML or script block. Markdown is not rendered.
+
+`npm test` uses the in-memory store and a stub Blob client. It does not connect to Neon or Vercel Blob, and it is not a hosted check.
 
 ## What has to exist first
 

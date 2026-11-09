@@ -66,11 +66,12 @@ The viewer and the developer CLI already match the privacy rules that can be enf
 
 - Client bytes are not part of the public site. `dist/` is HTML, CSS, the public images, and the client script. Server modules are not the static output.
 - Presentation JSON is validated before it is stored or returned. Unknown block types, including HTML, are rejected.
-- Media must match a JPEG, PNG, WebP, or PDF signature. SVG, HTML, script, Markdown, and MDX bytes are refused.
+- Media is accepted only when a short prefix matches JPEG, PNG, WebP, or PDF. That is not a full parse or a sanitizer. SVG, HTML, script, Markdown, and MDX text fail that prefix check and are refused. PDFs are downloaded. Images are served with nosniff and a locked content security policy.
+- Before a session cookie is set, the media adapter must confirm private storage is reachable. If Blob is configured but that call fails, no session is granted. Missing Blob configuration on a hosted deploy also refuses access before a session exists. `npm test` does not perform that call against a live store; the memory adapter reports success, and a stub can simulate failure.
 - PDF responses use an attachment download. Images are streamed only after the session check. The response does not include a Blob URL.
 - Asset and JSON responses set `Cache-Control: private, no-store`, `Referrer-Policy: no-referrer`, and `X-Robots-Tag: noindex`.
 - The site does not call a public image optimizer for private media and does not embed analytics.
-- If the private stores or the rate limiter are unavailable, access fails closed.
+- If Postgres or the rate limiter is unavailable, access fails closed. A Blob outage discovered while checking storage also fails closed and does not set a session cookie.
 
 The developer CLI can still write straight into the private store. That path has no snapshot digest, no approval record, and no compare-and-swap pointer. It must not be used as the publisher for a client submission.
 

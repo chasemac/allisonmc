@@ -10,9 +10,9 @@ Public pages stay static HTML, CSS, and a small client script. Do not add a fram
 
 ## Private viewing, as built
 
-A share code is redeemed by `POST /api/access`. The server stores only an HMAC of the code, sets an HttpOnly SameSite=Strict session for one project, and checks that session on every presentation, image, and file request. Responses use `Cache-Control: private, no-store`, `Referrer-Policy: no-referrer`, and `X-Robots-Tag: noindex`. Missing Postgres, Blob, or rate-limit configuration fails closed. The in-memory adapter is for local tests and is refused on Vercel.
+A share code is redeemed by `POST /api/access` from the page script. The access page is not a form, and the field has no name, so a browser with JavaScript disabled cannot put the code in a URL. The server stores only an HMAC. It checks that private media storage answers before it sets an HttpOnly SameSite=Strict session for one project, then checks that session on every presentation, image, and PDF request. If leaving the project fails, the page stays on the project and says the session is still active. Responses use `Cache-Control: private, no-store`, `Referrer-Policy: no-referrer`, and `X-Robots-Tag: noindex`. Missing Postgres, Blob configuration, or rate-limit configuration fails closed. The in-memory adapter is for local tests and is refused on Vercel. Those tests do not call a live database or Blob store.
 
-The page renders validated JSON with fixed components: text, galleries, and attachments. Text is inserted as text. JPEG, PNG, WebP, and PDF are the only media signatures accepted. JavaScript, HTML, MDX, Markdown files, and raw SVG are not renderable uploads. PDFs are authenticated downloads.
+The page renders validated JSON with fixed components: text, galleries, and attachments. Text is inserted as text. JPEG, PNG, WebP, and PDF are recognized by a short prefix, which is not a full parse or a sanitizer. JavaScript, HTML, MDX, Markdown files, and raw SVG are not renderable uploads. PDFs are authenticated downloads.
 
 ## Content handoff, not built
 

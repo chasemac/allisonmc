@@ -8,7 +8,8 @@ import vm from "node:vm";
 import { main } from "../lib/cli.js";
 import { lookupHash, sessionHash } from "../lib/codes.js";
 import { TEST_FIXTURE_CODE, seedDemo } from "../lib/demo-fixture.js";
-import { createBlobMedia } from "../lib/blob-media.js";
+import { blobCredentials, createBlobMedia } from "../lib/blob-media.js";
+import { loadEnvFile } from "../lib/cli.js";
 import { createPostgresStore } from "../lib/postgres-store.js";
 import { handle } from "../lib/router.js";
 import { createMemoryServices } from "../lib/runtime.js";
@@ -398,23 +399,105 @@ test("postgres queries stay parameterized and blob reads are private", async () 
   });
 
   const seen = [];
+  const previousToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const previousStore = process.env.BLOB_STORE_ID;
+  process.env.BLOB_READ_WRITE_TOKEN = "process-token";
+  process.env.BLOB_STORE_ID = "store_process";
   const media = createBlobMedia({
-    async put(pathname, _bytes, options) {
-      seen.push(options);
-      return { pathname, url: "https://store.example/private?sig=secret" };
-    },
-    async get(pathname, options) {
-      seen.push(options);
-      return { statusCode: 200, stream: new Blob(["x"]).stream(), blob: { contentType: "image/png" } };
+    env: { BLOB_READ_WRITE_TOKEN: "loaded-token", BLOB_STORE_ID: "store_loaded" },
+    client: {
+      async put(pathname, _bytes, options) {
+        seen.push(options);
+        return { pathname, url: "https://store.example/private?sig=secret" };
+      },
+      async get(pathname, options) {
+        seen.push(options);
+        return { statusCode: 200, stream: new Blob(["x"]).stream(), blob: { contentType: "image/png" } };
+      },
     },
   });
-  const saved = await media.put("projects/demo-northglass/media/plan", Buffer.from([0x89]), "image/png");
-  assert.deepEqual(saved, { pathname: "projects/demo-northglass/media/plan" });
-  assert.equal(seen[0].access, "private");
-  assert.equal(seen[0].addRandomSuffix, false);
-  await media.get("projects/demo-northglass/media/plan");
-  assert.equal(seen[1].access, "private");
-  await assert.rejects(() => media.get("../secret"));
+  try {
+    const saved = await media.put("projects/demo-northglass/media/plan", Buffer.from([0x89]), "image/png");
+    assert.deepEqual(saved, { pathname: "projects/demo-northglass/media/plan" });
+    assert.equal(seen[0].access, "private");
+    assert.equal(seen[0].addRandomSuffix, false);
+    assert.equal(seen[0].token, "loaded-token");
+    assert.equal(seen[0].storeId, "store_loaded");
+    await media.get("projects/demo-northglass/media/plan");
+    assert.equal(seen[1].access, "private");
+    assert.equal(seen[1].token, "loaded-token");
+    await assert.rejects(() => media.get("../secret"));
+  } finally {
+    if (previousToken === undefined) delete process.env.BLOB_READ_WRITE_TOKEN;
+    else process.env.BLOB_READ_WRITE_TOKEN = previousToken;
+    if (previousStore === undefined) delete process.env.BLOB_STORE_ID;
+    else process.env.BLOB_STORE_ID = previousStore;
+  }
+});
+
+test("blob credentials come from the selected env and hosted oidc is refreshed per call", async () => {
+  const previousToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const previousStore = process.env.BLOB_STORE_ID;
+  process.env.BLOB_READ_WRITE_TOKEN = "process-token";
+  process.env.BLOB_STORE_ID = "store_process";
+  try {
+    const dir = await mkdtemp(path.join(tmpdir(), "amc-env-"));
+    const file = path.join(dir, "env");
+    const { writeFileSync } = await import("node:fs");
+    writeFileSync(file, "BLOB_READ_WRITE_TOKEN=loaded-token\nBLOB_STORE_ID=store_loaded\n");
+    const loaded = loadEnvFile({ ...process.env, AMC_ENV_FILE: file });
+    const creds = await blobCredentials(loaded);
+    assert.equal(creds.token, "loaded-token");
+    assert.equal(creds.storeId, "store_loaded");
+    assert.equal(creds.oidcToken, undefined);
+    let issued = 0;
+    const first = await blobCredentials(
+      { VERCEL: "1", BLOB_STORE_ID: "store_loaded", BLOB_READ_WRITE_TOKEN: "loaded-token" },
+      async () => {
+        issued += 1;
+        return issued === 1 ? "oidc-one" : "oidc-two";
+      },
+    );
+    const second = await blobCredentials(
+      { VERCEL: "1", BLOB_STORE_ID: "store_loaded", BLOB_READ_WRITE_TOKEN: "loaded-token" },
+      async () => "oidc-two",
+    );
+    assert.equal(first.oidcToken, "oidc-one");
+    assert.equal(first.token, undefined);
+    assert.equal(first.storeId, "store_loaded");
+    assert.equal(second.oidcToken, "oidc-two");
+    assert.equal(second.storeId, "store_loaded");
+  } finally {
+    if (previousToken === undefined) delete process.env.BLOB_READ_WRITE_TOKEN;
+    else process.env.BLOB_READ_WRITE_TOKEN = previousToken;
+    if (previousStore === undefined) delete process.env.BLOB_STORE_ID;
+    else process.env.BLOB_STORE_ID = previousStore;
+  }
+});
+
+test("a media outage grants no session and a failed logout keeps it", async () => {
+  const services = await setup();
+  services.media.probe = async () => {
+    throw new Error("blob down");
+  };
+  const denied = await handle(accessRequest(TEST_FIXTURE_CODE, { ip: "203.0.113.70" }), { services, env });
+  assert.equal(denied.status, 503);
+  assert.equal(denied.headers.get("set-cookie"), null);
+
+  const open = await setup();
+  const cookie = await unlock(open, TEST_FIXTURE_CODE, "203.0.113.71");
+  open.store.revokeSession = async () => {
+    throw new Error("db down");
+  };
+  const bye = await handle(
+    new Request("http://127.0.0.1/api/logout", { method: "POST", headers: { cookie } }),
+    { services: open, env },
+  );
+  assert.equal(bye.status, 503);
+  assert.equal(bye.headers.get("set-cookie"), null);
+  const again = await handle(new Request("http://127.0.0.1/api/session", { headers: { cookie } }), { services: open, env });
+  assert.equal(again.status, 200);
+  assert.equal((await again.json()).authenticated, true);
 });
 
 test("public paths and the operator state file do not disclose codes", async () => {

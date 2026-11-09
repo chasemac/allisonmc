@@ -45,6 +45,10 @@ test("public pages keep Allison's existing copy, links, and photo", () => {
     assert.match(page, /https:\/\/www\.behance\.net\/gallery\/27744549\/Allison-Gay-Portfolio/);
     assert.match(page, /https:\/\/www\.linkedin\.com\/in\/allisongaymcelroy\//);
   }
+  const view = readFileSync("view.html", "utf8");
+  assert.equal(/<form[\s>]/i.test(view), false);
+  assert.equal(view.includes('name="code"'), false);
+  assert.match(view, /id="access-submit"[^>]*type="button"|type="button"[^>]*id="access-submit"/);
   assert.match(home, /assets\/img\/allisonProfile\.jpg/);
   assert.match(musings, /assets\/img\/boards\.jpeg/);
   assert.match(musings, /assets\/img\/banf\.jpg/);

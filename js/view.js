@@ -182,11 +182,23 @@
     }
 
     async function leaveProject() {
-      await fetch("/api/logout", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { accept: "application/json" },
-      });
+      const status = document.getElementById("status");
+      if (status) status.textContent = "";
+      let response;
+      try {
+        response = await fetch("/api/logout", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { accept: "application/json" },
+        });
+      } catch {
+        if (status) status.textContent = "Could not leave the project. Your session is still active.";
+        return;
+      }
+      if (!response.ok) {
+        if (status) status.textContent = "Could not leave the project. Your session is still active.";
+        return;
+      }
       project.textContent = "";
       project.hidden = true;
       gate.hidden = false;
@@ -197,8 +209,7 @@
       if (input) input.focus();
     }
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    async function submitCode() {
       const submitted = input.value;
       input.value = "";
       showError("");
@@ -227,7 +238,18 @@
         return;
       }
       showProject(data.project);
-    });
+    }
+
+    const submit = document.getElementById("access-submit");
+    if (submit) submit.addEventListener("click", () => submitCode());
+    if (input) {
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          submitCode();
+        }
+      });
+    }
 
     try {
       const existing = await fetch("/api/session", {
