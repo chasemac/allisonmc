@@ -40,11 +40,13 @@ When `DATA_STORE` and `MEDIA_STORE` are unset, or the host is a Vercel preview, 
 
 ## Developer commands
 
-Remote commands talk to Postgres and private Blob from a trusted machine. They do not read Drive. `.env.local` is filled from `.env.example` and never committed. For a live project, that file must hold the production `DATABASE_URL`, production `CODE_PEPPER`, and the private Blob credential. `AMC_TARGET=production` is required. A preview pepper against the shared database is refused.
+Remote commands talk to Postgres and private Blob from a trusted machine. They do not call Google. `import-drive` reads a local directory the operator already has. Without `--seal` it does not open Postgres or Blob. With `--seal` it follows the same store rules as `seal` and still does not approve or publish. It reads the folder twice. A file whose size or SHA-256 changes between those reads stops the command with `still syncing, try again`. Run it again when the folder is stable. There is no watcher. `project-access.json` in the submission is refused unread. Codes stay in the separate access file. `.env.local` is filled from `.env.example` and never committed. For a live project, that file must hold the production `DATABASE_URL`, production `CODE_PEPPER`, and the private Blob credential. `AMC_TARGET=production` is required. A preview pepper against the shared database is refused.
 
 Publishing commands, receipts, and the post-publish checks are in [publishing/WORKFLOW.md](publishing/WORKFLOW.md).
 
 ```bash
+node scripts/projects.mjs import-drive --dir /path/to/drive-snapshot --out /path/to/fresh-stage
+AMC_TARGET=production node scripts/projects.mjs import-drive --dir /path/to/drive-snapshot --out /path/to/fresh-stage --seal --store remote
 AMC_TARGET=production node scripts/projects.mjs list --store remote --project project-id
 AMC_TARGET=production node scripts/projects.mjs import-codes --store remote --file /path/to/project-access.json
 AMC_TARGET=production node scripts/projects.mjs revoke-code --store remote --project project-id --code "client code"

@@ -1,6 +1,6 @@
 # Publishing workflow
 
-Allison's client work is not copied into this repository. She puts a snapshot in the private Drive folder Allison Site Inbox. A maintainer copies a verified snapshot to a local directory and runs the commands below. There is no Drive watcher, poller, or webhook. Editing Drive does not publish files and does not activate a code. The folder name is not a project id. Do not connect this repo to that folder from an agent turn.
+Allison's client work is not copied into this repository. She puts a snapshot in the private Drive folder Allison Site Inbox. A maintainer runs `import-drive` on a local copy of that folder, either Google Drive for Desktop or a download. The command copies it to a fresh directory and prints the inspect receipt. It does not approve or publish. There is no Drive watcher, poller, webhook, or cron. Editing Drive does not publish files and does not activate a code. The folder name is not a project id. Do not connect this repo to that folder from an agent turn.
 
 This document uses placeholders. It contains no client names, project ids, submission ids, digests, or codes.
 
@@ -39,6 +39,30 @@ Ordinary files only. Shortcuts, live Docs, and external links are not a submissi
 `READY.json` is written last. It carries the project id, the submission id, and each file's path, size, and SHA-256. `inspect` reads the bytes once, checks those values, and prints `snapshotDigest`. That digest is SHA-256 of the UTF-8 JSON `{ projectId, submissionId, files }`, with files sorted by path and reduced to path, size, and SHA-256. If `READY.json` also has a `digest` field, `inspect` reports whether it matches. Approval uses the printed `snapshotDigest`.
 
 Uploading the same submission id again with different bytes is an error. A correction is a new submission id.
+
+## Stage from a local folder
+
+`import-drive` reads a directory on this machine. It does not call Google. Pass the Drive for Desktop path or a downloaded copy:
+
+```bash
+node scripts/projects.mjs import-drive --dir /path/to/drive-snapshot --out /path/to/fresh-stage
+```
+
+`--out` is a new directory. Its parent is a real directory, not a symlink. On macOS, `/tmp` is a symlink, so pick a folder you created. The command copies the snapshot there and leaves the source bytes unchanged. It refuses a symlink, a path that leaves the folder, and system junk: `.DS_Store`, the macOS `Icon` file, `desktop.ini`, a `~$` Office lock file, a hidden name, and Google shortcut stubs (`.gdoc`, `.gsheet`, `.gslides`, `.gform`, `.gdraw`). `project-access.json` inside the submission is refused. Codes stay in the separate access file. The command does not read or print them.
+
+The command reads the tree twice. If a file's size or SHA-256 changes between those reads, it stops with `still syncing, try again` and writes nothing. Run it again when the copy has finished. A missing `READY.json` stops with `READY.json is missing`. There is no wait loop.
+
+When the tree is stable, every listed file's size and SHA-256 are checked. If `READY.json` includes `digest`, that value has to match the snapshot digest. A snapshot without `digest` still stages, and the receipt shows `manifestDigestMatches: absent`. The command then runs the same checks as `inspect` and prints that receipt, plus `staged` and `sealed: false`.
+
+`--seal` seals the staged copy and still does not approve or publish. A snapshot that is not publishable stays on disk with `sealed: false`. `approve` and `publish` remain separate commands. Each one requires the printed `snapshotDigest`.
+
+```bash
+AMC_TARGET=production node scripts/projects.mjs import-drive --dir /path/to/drive-snapshot --out /path/to/fresh-stage --seal --store remote
+AMC_TARGET=production node scripts/projects.mjs approve --store remote --project project-id --submission submission-id --digest snapshotDigest --operation publish
+AMC_TARGET=production node scripts/projects.mjs publish --store remote --project project-id --submission submission-id --digest snapshotDigest
+```
+
+`inspect` still reads a local directory and does not copy it. Use it on the staged directory, or on a folder copied by hand.
 
 ## Document shape
 
@@ -102,9 +126,10 @@ A gstatic script may stay in the hosted widget. Edit that HTML for a phone layou
 
 ## Commands
 
-`inspect` and `derive` read a local directory and do not touch the database. `register-project` creates a placeholder and publishes nothing. Register the project id before the first seal.
+`import-drive` copies a local snapshot into a fresh directory and prints the inspect receipt. Without `--seal` it does not touch the database. `inspect` and `derive` read a local directory and do not touch the database. `register-project` creates a placeholder and publishes nothing. Register the project id before the first seal.
 
 ```bash
+node scripts/projects.mjs import-drive --dir /path/to/drive-snapshot --out /path/to/fresh-stage
 node scripts/projects.mjs inspect --dir /path/to/snapshot
 node scripts/projects.mjs derive --dir /path/to/original --out /path/to/derived --submission new-submission-id
 AMC_TARGET=production node scripts/projects.mjs register-project --store remote --project project-id --title "Title from content.json"
@@ -113,12 +138,13 @@ AMC_TARGET=production node scripts/projects.mjs approve --store remote --project
 AMC_TARGET=production node scripts/projects.mjs publish --store remote --project project-id --submission submission-id --digest snapshotDigest
 ```
 
-The live sequence after `inspect` is `seal`, then `approve --operation publish`, then `publish`. Use the `snapshotDigest` that `inspect` printed. Do not approve a differently computed manifest digest.
+The live sequence is `import-drive` or `inspect`, then `seal`, then `approve --operation publish`, then `publish`. `import-drive --seal` can take the place of the separate `seal`. Use the `snapshotDigest` that the receipt printed. Do not approve a differently computed manifest digest. `approve` and `publish` stay separate commands.
 
 Printed receipts:
 
 | Command | Prints |
 | --- | --- |
+| `import-drive` | the `inspect` receipt, plus `staged` and `sealed`. With `--seal`, also `idempotent`. `published` stays `false` |
 | `inspect` | `project`, `submission`, `snapshotDigest`, `manifestDigest`, `manifestDigestMatches`, `files`, `publishable`, `published: false`, then one tab-separated row per asset: `path`, `role`, `size`, the first 12 hex characters of that file's `sha256`, and `problems` (`none` when the asset has none). `content.json` is included in `files` and is not an asset row. The command does not print codes, notes, or file bytes. A database URL, pepper, session cookie, or JSON code inside a problem is redacted. |
 | `derive` | `inputDigest`, `outputDigest`, `published: false`, plus `DERIVED.json` in the output directory |
 | `seal` | `snapshotDigest`, `idempotent`, `published: false` |
@@ -131,9 +157,9 @@ Printed receipts:
 
 A correction is a new submission id and a new `READY.json`. Do not reuse a submission id with different bytes. `seal` rejects that as a digest conflict.
 
-1. Copy the new snapshot out of Allison Site Inbox.
-2. `node scripts/projects.mjs inspect --dir /path/to/snapshot` and keep the printed `snapshotDigest`.
-3. `AMC_TARGET=production node scripts/projects.mjs seal --store remote --dir /path/to/snapshot`
+1. `node scripts/projects.mjs import-drive --dir /path/to/drive-snapshot --out /path/to/fresh-stage` and keep the printed `snapshotDigest`. The source folder stays unchanged.
+2. `node scripts/projects.mjs inspect --dir /path/to/fresh-stage` if you want to read that receipt again.
+3. `AMC_TARGET=production node scripts/projects.mjs seal --store remote --dir /path/to/fresh-stage` or pass `--seal` on `import-drive`.
 4. `AMC_TARGET=production node scripts/projects.mjs approve --store remote --project project-id --submission submission-id --digest snapshotDigest --operation publish`
 5. `AMC_TARGET=production node scripts/projects.mjs publish --store remote --project project-id --submission submission-id --digest snapshotDigest`
 6. Run the verification below. Do not write the code into the command transcript, git, or chat.
@@ -175,7 +201,7 @@ Before the HMAC, the server normalizes NFC, trims, collapses spaces, and lowerca
 
 ## Not in this repository
 
-- A Drive client or watcher
+- A Google Drive API client, watcher, webhook, or cron
 - The client submission, its original manifest, or the derived receipt
 - Database URLs, peppers, Blob tokens, or the canary hash
 - A production deploy or a DNS change
