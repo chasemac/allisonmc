@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Project access · Allison McElroy</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#f3eee6" />
+    <link rel="icon" href="assets/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="sheet">
+      <header class="site-header">
+        <a class="mark" href="index.html">Allison McElroy</a>
+        <nav class="nav" aria-label="Primary">
+          <input class="nav-toggle" id="nav-toggle" type="checkbox" />
+          <label for="nav-toggle">Menu</label>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="musings.html">Musings</a></li>
+            <li><a href="https://www.behance.net/gallery/27744549/Allison-Gay-Portfolio" target="_blank" rel="noopener noreferrer">Portfolio<span class="sr-only"> (opens in a new tab)</span></a></li>
+            <li><a href="https://www.linkedin.com/in/allisongaymcelroy/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a></li>
+          </ul>
+        </nav>
+      </header>
+      <main id="content">
+        <p class="page-kicker" id="page-kicker">Private viewing</p>
+        <h1 id="page-title" tabindex="-1">Project access</h1>
+        <div id="gate" class="gate">
+          <p>Enter the code you were given to open one project.</p>
+          <form id="access-form">
+            <label for="project-code">Project code</label>
+            <input id="project-code" name="code" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required minlength="20" maxlength="200" />
+            <button class="primary-button" type="submit">View project</button>
+            <p id="form-error" class="form-error" role="alert"></p>
+          </form>
+          <noscript class="noscript"><p>Project viewing needs JavaScript enabled.</p></noscript>
+        </div>
+        <div id="project" hidden></div>
+      </main>
+      <footer class="site-footer">
+        <p>&copy; AllisonMc 2022. All Rights Reserved.</p>
+        <a href="index.html">Home</a>
+      </footer>
+    </div>
+    <dialog id="lightbox" aria-label="Expanded image">
+      <div class="lightbox-bar">
+        <button type="button" data-lightbox-prev>Previous</button>
+        <button type="button" data-lightbox-next>Next</button>
+        <button type="button" data-lightbox-close>Close</button>
+      </div>
+      <img alt="" />
+      <p class="lightbox-caption"></p>
+    </dialog>
+    <script src="js/view.js"></script>
+  </body>
+</html>

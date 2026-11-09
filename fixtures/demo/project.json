@@ -1,0 +1,71 @@
+{
+  "id": "demo-northglass",
+  "title": "Northglass Reading Room (fictional demo)",
+  "summary": "A fictional project used to try private viewing. It is not a real commission and it is not Allison McElroy's work.",
+  "fictional": true,
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "This reading room is invented for the viewing page: a small library room with one glazed wall. Nothing on this page describes a real client or a built project."
+        }
+      ]
+    },
+    {
+      "id": "drawings",
+      "title": "Drawings",
+      "blocks": [
+        {
+          "type": "gallery",
+          "images": [
+            {
+              "mediaId": "plan",
+              "alt": "Fictional demo plan diagram of a rectangular room",
+              "caption": "Fictional plan"
+            },
+            {
+              "mediaId": "section",
+              "alt": "Fictional demo section diagram with a simple roof",
+              "caption": "Fictional section"
+            },
+            {
+              "mediaId": "detail",
+              "alt": "Fictional demo window mullion detail",
+              "caption": "Fictional detail"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "files",
+      "title": "Files",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "The file below is a fictional attachment. The link is an approved example address, not a client document."
+        },
+        { "type": "attachment", "attachmentId": "notes" },
+        { "type": "attachment", "attachmentId": "example-link" }
+      ]
+    }
+  ],
+  "attachments": [
+    {
+      "id": "notes",
+      "label": "Fictional notes (PDF)",
+      "kind": "file",
+      "mediaId": "notes",
+      "filename": "fictional-notes.pdf"
+    },
+    {
+      "id": "example-link",
+      "label": "Example approved link",
+      "kind": "link",
+      "href": "https://example.com/"
+    }
+  ]
+}
