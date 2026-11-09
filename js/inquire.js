@@ -24,9 +24,10 @@
     event.preventDefault();
     const name = form.elements.name.value.trim();
     const email = form.elements.email.value.trim();
-    if (!name || !email || !form.elements.email.checkValidity()) {
-      status.textContent = "Please add your name and a valid email address.";
-      (name ? form.elements.email : form.elements.name).focus();
+    const location = form.elements.location.value.trim();
+    if (!name || !email || !form.elements.email.checkValidity() || !location) {
+      status.textContent = "Please add your name, a valid email address and the project location.";
+      (!name ? form.elements.name : !email || !form.elements.email.checkValidity() ? form.elements.email : form.elements.location).focus();
       return;
     }
     const data = new FormData(form);

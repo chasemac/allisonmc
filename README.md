@@ -1,6 +1,6 @@
 # Allison McElroy
 
-Personal site for Allison McElroy. The public pages are static. Client project viewing is a separate server-checked path and is not part of the public biography.
+Website for Allison McElroy Design, a residential design practice based in Costa Mesa, serving Orange County in person with select services available remotely. The public pages are static. Client project viewing is a separate server-checked path and is not part of the public site.
 
 Agent constraints are in [AGENTS.md](AGENTS.md). Runtime detail is in [docs/runbook.md](docs/runbook.md). Publishing commands are in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md).
 
