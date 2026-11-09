@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 1rem; font-family: sans-serif; color: #1b1916; }
+  canvas { width: 100%; height: 16rem; background: #16332e; }
+</style>
+</head>
+<body>
+<p>Fictional schematic. Nothing here is a client drawing.</p>
+<canvas id="board" width="640" height="280"></canvas>
+<p><button id="save" type="button">Download a note</button></p>
+<script>
+const board = document.getElementById("board");
+const pen = board.getContext("2d");
+pen.fillStyle = "#f3eee6";
+pen.fillRect(48, 48, 220, 90);
+document.getElementById("save").addEventListener("click", () => {
+  const blob = new Blob(["fictional note"], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "fictional-note.txt";
+  link.click();
+});
+</script>
+</body>
+</html>

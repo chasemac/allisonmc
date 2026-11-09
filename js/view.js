@@ -20,7 +20,8 @@
     return typeof value === "string" && pattern.test(value) ? value : "";
   }
 
-  const projectPattern = /^[a-z0-9][a-z0-9-]{0,63}$/;
+  const projectPattern = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+  const sectionPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
   const mediaPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
 
   function renderGallery(projectId, images) {
@@ -90,7 +91,7 @@
     nav.setAttribute("aria-label", "Project sections");
     const list = el("ul");
     for (const section of presentation.sections || []) {
-      if (!section || !safeId(section.id, projectPattern)) continue;
+      if (!section || !safeId(section.id, sectionPattern)) continue;
       const item = el("li");
       const link = el("a", "", String(section.title || "Section"));
       link.setAttribute("href", `#s-${section.id}`);
@@ -106,13 +107,21 @@
     root.append(leave);
 
     for (const section of presentation.sections || []) {
-      if (!section || !safeId(section.id, projectPattern)) continue;
+      if (!section || !safeId(section.id, sectionPattern)) continue;
       const article = el("article", "project-section");
       article.id = `s-${section.id}`;
       article.append(el("h2", "", String(section.title || "")));
       for (const block of section.blocks || []) {
         if (!block || typeof block !== "object") continue;
-        if (block.type === "text" && typeof block.text === "string") {
+        if (block.type === "widget" && safeId(block.mediaId, mediaPattern) && safeId(presentation.id, projectPattern)) {
+          const frame = document.createElement("iframe");
+          frame.className = "widget-frame";
+          frame.sandbox = "allow-scripts allow-downloads";
+          frame.referrerPolicy = "no-referrer";
+          frame.title = typeof block.title === "string" ? block.title : "Interactive view";
+          frame.src = `/api/projects/${presentation.id}/widgets/${block.mediaId}`;
+          article.append(frame);
+        } else if (block.type === "text" && typeof block.text === "string") {
           article.append(el("p", "", block.text));
         } else if (block.type === "gallery" && Array.isArray(block.images)) {
           article.append(renderGallery(presentation.id, block.images));

@@ -8,7 +8,7 @@ Personal site for Allison McElroy. The public pages are static. Client project v
 - `/musings.html` — musings, also available as `/musings` on Vercel
 - `/view.html` — code form for a private project, also available as `/view` on Vercel
 
-`CNAME` stays so GitHub Pages can keep serving `allisonmc.com` until a deliberate cutover. This change does not switch DNS, mail, or hosting.
+`allisonmc.com` already serves this site from Vercel. Mail still uses the existing iCloud records. This branch does not change DNS, mail, or production.
 
 ## Vercel static settings
 
@@ -21,7 +21,7 @@ Personal site for Allison McElroy. The public pages are static. Client project v
 | Output directory | `dist` |
 | Node.js | 22 or 24 |
 
-`dist/` contains only HTML, CSS, client JS, images, and `CNAME`. Functions stay in `api/`. Do not attach `allisonmc.com` and do not deploy this as production from this change.
+`dist/` contains only HTML, CSS, client JS, images, and `CNAME`. Functions stay in `api/`. Do not deploy this branch to production from the agent.
 
 After the first preview, confirm these URLs 404:
 
@@ -31,9 +31,9 @@ After the first preview, confirm these URLs 404:
 
 ## Private projects
 
-Clients open one curated project with a code. There is no account, admin site, comment thread, or uploaded HTML. What the server does today is in [docs/runbook.md](docs/runbook.md).
+Clients open one curated project with a code. There is no account, admin site, or comment thread. A project can include a self-contained widget in a sandboxed iframe. What the server does is in [docs/runbook.md](docs/runbook.md).
 
-Allison's future content handoff is a private Drive inbox and a manual publish step. That importer is not in this repo. The rules are in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md). Agent constraints are in [AGENTS.md](AGENTS.md).
+Client files stay out of this repo. A maintainer publishes from a verified local snapshot with the commands in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md). `DATA_STORE` and `MEDIA_STORE` stay unset until that path is reviewed and a real project is ready, so hosted project access stays closed. Agent constraints are in [AGENTS.md](AGENTS.md).
 
 - Vercel Functions (`api/[...path].js`) on the default Node.js runtime
 - Neon Postgres for projects, HMAC share-code hashes, sessions, and the shared rate limit
