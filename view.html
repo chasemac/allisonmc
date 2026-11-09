@@ -4,11 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Project access · Allison McElroy</title>
+    <meta name="description" content="Enter the code you were given to open one project." />
     <meta name="robots" content="noindex" />
+    <link rel="canonical" href="https://allisonmc.com/view.html" />
     <meta name="theme-color" content="#f3eee6" />
     <link rel="icon" href="assets/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/lato/v25/S6uyw4BMUTPHjx4wXiWtFCc.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVSwiPGQ3q5d0.woff2" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet" />
     <link href="css/styles.css" rel="stylesheet" />
   </head>
@@ -18,9 +22,9 @@
       <header class="site-header">
         <a class="mark" href="index.html">Allison McElroy</a>
         <nav class="nav" aria-label="Primary">
-          <input class="nav-toggle" id="nav-toggle" type="checkbox" />
-          <label for="nav-toggle">Menu</label>
-          <ul>
+          <input class="nav-toggle" id="nav-toggle" type="checkbox" aria-controls="primary-nav" />
+          <label for="nav-toggle"><span class="nav-label-open">Menu</span><span class="nav-label-close">Close</span></label>
+          <ul id="primary-nav">
             <li><a href="index.html">Home</a></li>
             <li><a href="musings.html">Musings</a></li>
             <li><a href="https://www.behance.net/gallery/27744549/Allison-Gay-Portfolio" target="_blank" rel="noopener noreferrer">Portfolio<span class="sr-only"> (opens in a new tab)</span></a></li>
@@ -34,10 +38,10 @@
         <p id="page-subtitle" class="project-subtitle" hidden></p>
         <p id="status" class="form-error" role="alert"></p>
         <div id="gate" class="gate">
-          <p>Enter the code you were given to open one project.</p>
+          <p id="access-hint">Enter the code you were given to open one project.</p>
           <div id="access-form">
             <label for="project-code">Project code</label>
-            <input id="project-code" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" minlength="6" maxlength="200" />
+            <input id="project-code" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" minlength="6" maxlength="200" aria-required="true" aria-describedby="access-hint form-error" />
             <button class="primary-button" id="access-submit" type="button">View project</button>
             <p id="form-error" class="form-error" role="alert"></p>
           </div>

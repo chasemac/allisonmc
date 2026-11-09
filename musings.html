@@ -6,10 +6,23 @@
     <title>Musings · Allison McElroy</title>
     <meta name="description" content="Musings from Allison McElroy." />
     <link rel="canonical" href="https://allisonmc.com/musings.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://allisonmc.com/musings.html" />
+    <meta property="og:title" content="Musings · Allison McElroy" />
+    <meta property="og:description" content="Musings from Allison McElroy." />
+    <meta property="og:image" content="https://allisonmc.com/assets/img/boards.jpeg" />
+    <meta property="og:image:alt" content="Four wooden signs on river stones, lettered in white with Ephesians 3:17-19." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Musings · Allison McElroy" />
+    <meta name="twitter:description" content="Musings from Allison McElroy." />
+    <meta name="twitter:image" content="https://allisonmc.com/assets/img/boards.jpeg" />
     <meta name="theme-color" content="#f3eee6" />
     <link rel="icon" href="assets/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="image" type="image/webp" imagesrcset="assets/img/boards-640.webp 640w, assets/img/boards-1280.webp 1280w" imagesizes="(max-width: 799px) calc(100vw - 3.8rem), 40rem" fetchpriority="high" />
+    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/lato/v25/S6uyw4BMUTPHjx4wXiWtFCc.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVSwiPGQ3q5d0.woff2" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet" />
     <link href="css/styles.css" rel="stylesheet" />
   </head>
@@ -19,9 +32,9 @@
       <header class="site-header">
         <a class="mark" href="index.html">Allison McElroy</a>
         <nav class="nav" aria-label="Primary">
-          <input class="nav-toggle" id="nav-toggle" type="checkbox" />
-          <label for="nav-toggle">Menu</label>
-          <ul>
+          <input class="nav-toggle" id="nav-toggle" type="checkbox" aria-controls="primary-nav" />
+          <label for="nav-toggle"><span class="nav-label-open">Menu</span><span class="nav-label-close">Close</span></label>
+          <ul id="primary-nav">
             <li><a href="index.html">Home</a></li>
             <li><a href="musings.html" aria-current="page">Musings</a></li>
             <li><a href="https://www.behance.net/gallery/27744549/Allison-Gay-Portfolio" target="_blank" rel="noopener noreferrer">Portfolio<span class="sr-only"> (opens in a new tab)</span></a></li>
@@ -35,21 +48,30 @@
           <h1>Musings</h1>
         </div>
         <figure class="entry">
-          <img src="assets/img/boards.jpeg" width="1536" height="1536" alt="Four wooden signs on river stones, lettered in white: So that you, being rooted and grounded in love, may have strength to comprehend what is the breadth and length and height and depth, and to know the love of Christ that surpasses knowledge, that you may be filled with all the fullness of God. Ephesians 3:17-19." />
+          <picture>
+            <source type="image/webp" srcset="assets/img/boards-640.webp 640w, assets/img/boards-1280.webp 1280w" sizes="(max-width: 799px) calc(100vw - 3.8rem), 40rem" />
+            <img src="assets/img/boards.jpeg" width="1536" height="1536" alt="Four wooden signs on river stones, lettered in white: So that you, being rooted and grounded in love, may have strength to comprehend what is the breadth and length and height and depth, and to know the love of Christ that surpasses knowledge, that you may be filled with all the fullness of God. Ephesians 3:17-19." fetchpriority="high" />
+          </picture>
           <figcaption>
             <p class="entry-index">01</p>
             <p>If there's one thing I love more than surprises, it's helping a good friend with a surprise proposal!</p>
           </figcaption>
         </figure>
         <figure class="entry">
-          <img src="assets/img/banf.jpg" width="1800" height="1212" alt="Allison smiling on a boat on turquoise water, with forested mountains behind her." loading="lazy" />
+          <picture>
+            <source type="image/webp" srcset="assets/img/banf-640.webp 640w, assets/img/banf-1280.webp 1280w" sizes="(max-width: 799px) calc(100vw - 3.8rem), 40rem" />
+            <img src="assets/img/banf.jpg" width="1800" height="1212" alt="Allison smiling on a boat on turquoise water, with forested mountains behind her." loading="lazy" decoding="async" />
+          </picture>
           <figcaption>
             <p class="entry-index">02</p>
             <p>Just a glimpse at our amazing friendcation to Banff, Canada. Thanks to our favorite Canadian couple for tying the knot and giving us Californians an excuse to visit your amazing home.</p>
           </figcaption>
         </figure>
         <figure class="entry">
-          <img src="assets/img/weddingInvites.jpeg" width="1800" height="1200" alt="Wedding invitation suite for Allison Paige and Chase Murdock McElroy, with a map card, an RSVP card, and a succulent on a wooden table." loading="lazy" />
+          <picture>
+            <source type="image/webp" srcset="assets/img/weddingInvites-640.webp 640w, assets/img/weddingInvites-1280.webp 1280w" sizes="(max-width: 799px) calc(100vw - 3.8rem), 40rem" />
+            <img src="assets/img/weddingInvites.jpeg" width="1800" height="1200" alt="Wedding invitation suite for Allison Paige and Chase Murdock McElroy, with a map card, an RSVP card, and a succulent on a wooden table." loading="lazy" decoding="async" />
+          </picture>
           <figcaption>
             <p class="entry-index">03</p>
             <p>Shoutout to our amazing photographers at Hom Photography and my now husband Chase for his invitation production skills. Thank you all for making my wedding dreams come true.</p>
