@@ -94,6 +94,15 @@ test("pages link to real files and do not load the old template", () => {
   assert.ok(contrast(colors.muted, "#fffdf9") >= 4.5);
   assert.ok(contrast(colors.cypress, "#fffdf9") >= 4.5);
   assert.ok(contrast(colors.danger, colors.paper) >= 4.5);
+  const lato = "family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700";
+  for (const page of ["index.html", "musings.html", "view.html", "404.html"]) {
+    const html = readFileSync(page, "utf8");
+    assert.equal(html.includes(lato), true, page);
+    assert.equal(/Fraunces|Outfit/.test(html), false, page);
+  }
+  assert.match(css, /--font:\s*"Lato"/);
+  assert.equal(/Fraunces|Outfit/.test(css), false);
+  assert.match(css, /h1,\s*h2,\s*h3,[\s\S]*?font-weight:\s*700/);
 });
 
 test("static output omits server code, secrets, and the fixture code", () => {
