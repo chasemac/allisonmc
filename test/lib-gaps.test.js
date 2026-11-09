@@ -387,7 +387,7 @@ test("small library edges reject bad ids, media, config, and public paths", asyn
     BLOB_PRIVATE_CANARY_SHA256: canary,
   }), true);
   assert.equal(blobConfigured({ BLOB_AUTH: "oidc", BLOB_STORE_ID: "store_selected", BLOB_PRIVATE_CANARY_SHA256: canary }), false);
-  assert.deepEqual(rateConfig({}), { max: 8, windowMs: 600000 });
+  assert.deepEqual(rateConfig({}), { max: 8, windowMs: 600000, globalMax: 0 });
   assert.throws(() => rateConfig({ RATE_LIMIT_WINDOW_MS: "1000" }), (err) => err instanceof FailClosed);
   assert.throws(() => rateConfig({ RATE_LIMIT_MAX: "0" }), (err) => err instanceof FailClosed);
   assert.deepEqual(assertRuntimeConfig({ DATA_STORE: "memory", MEDIA_STORE: "memory", CODE_PEPPER: PEPPER }), { mode: "memory" });
