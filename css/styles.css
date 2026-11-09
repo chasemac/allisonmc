@@ -427,16 +427,9 @@ dialog button {
   color: #f6f1e8;
 }
 
-.project-tab:focus-visible,
-#leave-project:focus-visible {
+.project-tab:focus-visible {
   outline: 2px solid var(--cypress);
   outline-offset: 2px;
-}
-
-#leave-project {
-  flex: 0 0 auto;
-  margin: 0;
-  white-space: nowrap;
 }
 
 .tab-panel[hidden] {

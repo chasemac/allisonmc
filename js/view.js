@@ -94,9 +94,10 @@
     const id = section.id || "";
     const blocks = Array.isArray(section.blocks) ? section.blocks : [];
     if (id === "meta-details" || id === "meta-notes" || id === "overview") return "overview";
+    if (id === "role-3d-preview" || id === "3d-preview" || section.title === "3D preview") return "files";
     if (id.indexOf("role-") === 0) {
       const role = id.slice(5);
-      if (["hero", "3d-preview", "page-preview", "plan-sheet", "proposal-preview", "punchlist-preview", "reference-photo", "gallery"].indexOf(role) >= 0) {
+      if (["hero", "page-preview", "plan-sheet", "proposal-preview", "punchlist-preview", "reference-photo", "gallery"].indexOf(role) >= 0) {
         return "drawings";
       }
       return "files";
@@ -212,10 +213,6 @@
       showTab(buttons[index].tabId, true);
     });
     bar.append(tablist);
-    const leave = el("button", "text-button", "Leave project");
-    leave.type = "button";
-    leave.id = "leave-project";
-    bar.append(leave);
     root.append(bar);
 
     if (typeof presentation.summary === "string") panels.overview.append(el("p", "summary", presentation.summary));
@@ -313,38 +310,8 @@
       gate.hidden = true;
       project.hidden = false;
       renderProject(project, presentation);
-      const leave = document.getElementById("leave-project");
-      if (leave) leave.addEventListener("click", leaveProject);
       const heading = document.getElementById("page-title");
       if (heading && heading.focus) heading.focus();
-    }
-
-    async function leaveProject() {
-      const status = document.getElementById("status");
-      if (status) status.textContent = "";
-      let response;
-      try {
-        response = await fetch("/api/logout", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: { accept: "application/json" },
-        });
-      } catch {
-        if (status) status.textContent = "Could not leave the project. Your session is still active.";
-        return;
-      }
-      if (!response.ok) {
-        if (status) status.textContent = "Could not leave the project. Your session is still active.";
-        return;
-      }
-      project.textContent = "";
-      project.hidden = true;
-      gate.hidden = false;
-      const title = document.getElementById("page-title");
-      const kicker = document.getElementById("page-kicker");
-      if (title) title.textContent = "Project access";
-      if (kicker) kicker.textContent = "Private viewing";
-      if (input) input.focus();
     }
 
     async function submitCode() {

@@ -78,27 +78,20 @@ async function bootWith(fetchImpl) {
   return document;
 }
 
-test("a failed logout stays on the project and a reload still has the session", async () => {
-  let sessionOpen = true;
+test("a session shows the project and there is no leave button", async () => {
   const document = await bootWith(async (url) => {
     if (url === "/api/session") {
       return {
         ok: true,
         status: 200,
-        json: async () => (sessionOpen ? { authenticated: true, project } : { authenticated: false }),
+        json: async () => ({ authenticated: true, project }),
       };
     }
-    if (url === "/api/logout") return { ok: false, status: 503, json: async () => ({ error: "Project access is unavailable." }) };
     throw new Error("unexpected request");
   });
   assert.equal(document.getElementById("gate").hidden, true);
   assert.equal(document.getElementById("project").hidden, false);
-  const leave = document.getElementById("leave-project");
-  assert.ok(leave);
-  await leave.listeners.find((listener) => listener.type === "click").fn();
-  assert.equal(document.getElementById("project").hidden, false);
-  assert.equal(document.getElementById("gate").hidden, true);
-  assert.match(document.getElementById("status").textContent, /still active/);
+  assert.equal(document.getElementById("leave-project"), null);
 
   const reloaded = await bootWith(async (url) => {
     if (url === "/api/session") {
