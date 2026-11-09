@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { PAGES, SITE_PAGES } from "../scripts/pages.mjs";
 
-const pages = ["index.html", "musings.html", "view.html", "404.html"];
+const pages = PAGES;
 const latoHref = "https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap";
 
 function jpegSize(bytes) {
@@ -36,7 +37,7 @@ function attr(tag, name) {
 }
 
 test("public images declare alt text and a stable aspect ratio", () => {
-  for (const page of ["index.html", "musings.html", "404.html"]) {
+  for (const page of pages.filter((page) => page !== "view.html")) {
     for (const tag of images(readFileSync(page, "utf8"))) {
       const alt = attr(tag, "alt");
       const src = attr(tag, "src");
@@ -79,19 +80,21 @@ test("musings photos use sized WebP and lazy-load below the first image", () => 
       assert.equal(readFileSync(url).subarray(0, 4).toString(), "RIFF", url);
     }
   }
-  const home = readFileSync("index.html", "utf8");
+  const home = readFileSync("legacy-home.html", "utf8");
   assert.match(home, /assets\/img\/allisonProfile-400\.webp 400w/);
   assert.match(home, /assets\/img\/allisonProfile-520\.webp 520w/);
   assert.match(home, /assets\/img\/allisonProfile\.jpg/);
 });
 
 test("Lato is the only webfont and it swaps instead of hiding text", () => {
-  const css = readFileSync("css/styles.css", "utf8");
-  assert.match(css, /--font:\s*"Lato",\s*-apple-system/);
-  const withoutStack = css.replace(/--font:\s*[^;]+;/, "");
-  assert.equal(/Fraunces|Outfit|Georgia|Garamond|Merriweather|Playfair|Montserrat|Inter/.test(withoutStack), false);
-  for (const declared of withoutStack.matchAll(/font-family:\s*([^;]+);/g)) {
-    assert.match(declared[1], /var\(--font\)/, declared[1]);
+  for (const sheet of ["css/styles.css", "css/site.css"]) {
+    const css = readFileSync(sheet, "utf8");
+    assert.match(css, /--font:\s*"Lato",\s*-apple-system/, sheet);
+    const withoutStack = css.replace(/--font:\s*[^;]+;/, "");
+    assert.equal(/Fraunces|Outfit|Georgia|Garamond|Merriweather|Playfair|Montserrat|Inter\b/.test(withoutStack), false, sheet);
+    for (const declared of withoutStack.matchAll(/font-family:\s*([^;]+);/g)) {
+      assert.match(declared[1], /var\(--font\)/, declared[1]);
+    }
   }
   for (const page of pages) {
     const html = readFileSync(page, "utf8");
@@ -99,7 +102,7 @@ test("Lato is the only webfont and it swaps instead of hiding text", () => {
     assert.equal(html.includes('rel="preconnect" href="https://fonts.googleapis.com"'), true, page);
     assert.equal(html.includes('rel="preconnect" href="https://fonts.gstatic.com" crossorigin'), true, page);
     const preloads = [...html.matchAll(/<link rel="preload" as="font"[^>]*>/g)].map((match) => match[0]);
-    assert.equal(preloads.length, 2, page);
+    assert.equal(preloads.length, 3, page);
     for (const link of preloads) {
       assert.match(attr(link, "href"), /^https:\/\/fonts\.gstatic\.com\/s\/lato\/.+\.woff2$/);
       assert.match(link, /\bcrossorigin\b/);

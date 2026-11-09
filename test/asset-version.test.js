@@ -4,6 +4,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { PAGES } from "../scripts/pages.mjs";
 import { versionHtml, versionReferences } from "../scripts/asset-version.mjs";
 
 const hashes = new Map([["assets/img/a.jpg", "aaaaaaaaaa"], ["assets/img/a-640.webp", "bbbbbbbbbb"]]);
@@ -20,7 +21,7 @@ test("the build step versions every public asset reference with its real content
   // A private copy, because other test files rebuild dist/ in parallel.
   const out = mkdtempSync(path.join(tmpdir(), "amc-assets-"));
   t.after(() => rmSync(out, { recursive: true, force: true }));
-  const pages = ["index.html", "musings.html", "view.html", "404.html"];
+  const pages = PAGES;
   for (const item of [...pages, "assets"]) cpSync(item, path.join(out, item), { recursive: true });
   await versionHtml(out, pages);
   assert.match(readFileSync("scripts/prepare-static.mjs", "utf8"), /await versionHtml\(dist, pages\)/);

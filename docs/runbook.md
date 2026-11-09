@@ -87,12 +87,12 @@ Real client files do not belong in this repository, in `dist/`, or in `assets/`.
 
 ## Typography
 
-The viewer shares `css/styles.css` with the public pages. The family is Lato 300, 400, and 700, including italics, with a system sans-serif fallback. Do not reintroduce Fraunces, Outfit, or another family unless a person asks.
+The viewer and the hidden legacy pages use `css/styles.css`; the designer site uses `css/site.css`. The family is Lato 300, 400, and 700, including italics, with a system sans-serif fallback. Do not reintroduce Fraunces, Outfit, or another family unless a person asks.
 
 ## Checks before a preview is shared
 
 - `npm test`
-- `/` and `/musings.html` render the existing biography and musings, in Lato
+- `/` and the designer pages render in Lato with the Evergreen + Slate palette; `/legacy-home.html` and `/musings.html` still render the earlier biography and musings
 - `/lib/demo-fixture.js` and `/fixtures/demo/project.json` are not publicly served
 - `/api/access` is 503 when stores or the pepper are missing, on hosted preview, and when the private canary does not match
 - When production stores are configured, a wrong code returns 401 and a valid code returns 200

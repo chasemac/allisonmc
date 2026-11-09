@@ -1,16 +1,18 @@
 # Allison McElroy
 
-Personal site for Allison McElroy. The public pages are static. Client project viewing is a separate server-checked path and is not part of the public biography.
+Website for Allison McElroy Design, a residential design practice based in Costa Mesa, serving Orange County in person with select services available remotely. The public pages are static. Client project viewing is a separate server-checked path and is not part of the public site.
 
 Agent constraints are in [AGENTS.md](AGENTS.md). Runtime detail is in [docs/runbook.md](docs/runbook.md). Publishing commands are in [docs/publishing/WORKFLOW.md](docs/publishing/WORKFLOW.md).
 
 ## Public pages
 
-- `/` and `/index.html` — home
-- `/musings.html` — musings, also available as `/musings` on Vercel
+- `/` and `/index.html` — Allison McElroy Design home
+- `/work.html`, `/work-mcelroy-kitchen.html`, `/work-mcelroy-bathroom.html` — work index and project pages
+- `/services.html`, `/about.html`, `/stories.html`, `/story-our-home-in-phases.html`, `/inquire.html` — services, about, stories and the inquiry form
+- `/legacy-home.html` and `/musings.html` — the earlier home page and musings, kept but hidden (`noindex`, not linked)
 - `/view.html` — code form for a private project, also available as `/view` on Vercel
 
-Typography is Lato (300, 400, 700, and italics) on every page that shares `css/styles.css`, including the project viewer. Do not add another font family unless a person asks.
+Typography is Lato (300, 400, 700, and italics) on every page: the designer site uses `css/site.css`, and the project viewer and legacy pages use `css/styles.css`. Do not add another font family unless a person asks.
 
 ## Hosting
 
