@@ -495,6 +495,39 @@ a:hover {
   font-weight: 700;
 }
 
+/* Project photos: real images in the same slot ratios as the placeholders. */
+.photo {
+  margin: 0;
+}
+
+.photo picture,
+.photo img {
+  display: block;
+  width: 100%;
+}
+
+.photo img {
+  height: auto;
+  object-fit: cover;
+  background: var(--mist);
+}
+
+.r16x10.photo img { aspect-ratio: 16 / 10; }
+.r3x2.photo img { aspect-ratio: 3 / 2; }
+.r4x3.photo img { aspect-ratio: 4 / 3; }
+.r4x5.photo img { aspect-ratio: 4 / 5; }
+
+.photo figcaption {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.card .photo {
+  margin-bottom: 1rem;
+}
+
 .ph figcaption {
   margin-top: 0.6rem;
   color: var(--muted);

@@ -91,23 +91,57 @@ test("the homepage follows the blueprint order and copy", () => {
   assert.match(html, /<p class="status">Concept design<\/p>/);
 });
 
-test("photos are labeled placeholders with the photo guide IDs, never stock or AI images", () => {
-  const expected = {
-    "index.html": ["K-01", "B-01", "K-07", "A-01"],
-    "work-mcelroy-kitchen.html": ["K-01", "K-02", "K-03", "K-04", "K-05", "K-07", "K-08"],
-    "work-mcelroy-bathroom.html": ["B-01", "B-02", "B-03", "B-04", "B-05", "B-06"],
-    "about.html": ["A-01", "C-01"],
+test("photo slots show the chosen McElroy photos or labeled placeholders, never stock or AI images", () => {
+  const photos = {
+    "index.html": ["K-01"],
+    "work.html": ["K-01"],
+    "work-mcelroy-kitchen.html": ["K-01", "K-02", "K-03", "K-04", "K-05"],
   };
-  for (const [page, ids] of Object.entries(expected)) {
+  const placeholders = {
+    "index.html": ["B-01", "K-07"],
+    "work-mcelroy-kitchen.html": ["K-07", "K-08"],
+    "work-mcelroy-bathroom.html": ["B-01", "B-02", "B-03", "B-04", "B-05", "B-06"],
+    "about.html": ["C-01"],
+  };
+  for (const [page, ids] of Object.entries(photos)) {
+    const html = read(page);
+    for (const id of ids) {
+      assert.match(html, new RegExp(`<figure class="photo [^"]+" data-photo="${id}">`), `${page} ${id} photo`);
+      assert.equal(html.includes(`[PHOTO: ${id}]`), false, `${page} ${id} still a placeholder`);
+    }
+  }
+  for (const [page, ids] of Object.entries(placeholders)) {
     const html = read(page);
     for (const id of ids) assert.match(html, new RegExp(`\\[PHOTO: ${id}\\]`), `${page} ${id}`);
+  }
+  // A-01 is Allison's portrait once its file is in the repo; until then it stays a placeholder.
+  for (const page of ["index.html", "about.html"]) {
+    const html = read(page);
+    assert.ok(html.includes("[PHOTO: A-01]") || /data-photo="A-01"[\s\S]*?alt="Allison McElroy"/.test(html), `${page} A-01`);
   }
   assert.match(read("work-mcelroy-kitchen.html"), /During the renovation/);
   assert.match(read("work-mcelroy-kitchen.html"), /<span class="ph-label">Before<\/span>/);
   for (const page of SITE_PAGES) {
     for (const img of read(page).match(/<img\b[^>]*>/g) || []) {
-      assert.match(img, /src="assets\/img\/wordmark-/, `${page} has a non-logo image: ${img}`);
+      assert.match(img, /src="assets\/img\/(wordmark-|kitchen-k0[1-5]|allison-a01)/, `${page} has an unexpected image: ${img}`);
+      if (!/wordmark-/.test(img)) {
+        assert.match(img, /alt="[^"]{10,}"|alt="Allison McElroy"/, `${page} photo needs alt text: ${img}`);
+        assert.match(img, / width="\d+" height="\d+"/, `${page} photo needs dimensions: ${img}`);
+      }
     }
+  }
+});
+
+test("every referenced photo file exists and carries no EXIF or GPS block", () => {
+  const refs = new Set();
+  for (const page of SITE_PAGES) {
+    for (const m of read(page).matchAll(/assets\/img\/((?:kitchen|allison)-[a-z0-9-]+\.(?:webp|jpg))/g)) refs.add(m[1]);
+  }
+  assert.ok(refs.size >= 10, `found ${refs.size} photo files`);
+  for (const f of refs) {
+    const buf = readFileSync(`assets/img/${f}`);
+    assert.equal(buf.includes(Buffer.from("Exif\0\0")), false, `${f} has EXIF`);
+    assert.equal(buf.includes(Buffer.from("EXIF")), false, `${f} has a WebP EXIF chunk`);
   }
 });
 
@@ -126,7 +160,14 @@ test("open facts stay visible placeholders instead of guesses", () => {
   }
   assert.equal(/\$\s?\d/.test(visible(all)), false, "no prices");
   assert.equal(/testimonial|award/i.test(visible(all)), false);
-  assert.equal(all.includes("organizedbychoice.com"), false, "no collaborator link before Brenda approves");
+  // Chase supplied Brenda's site, so Organized By Choice links out; her service area, pricing and schedule stay placeholders.
+  for (const a of all.match(/<a [^>]*organizedbychoice\.com[^>]*>/g) || []) {
+    assert.match(a, /href="https:\/\/www\.organizedbychoice\.com"/);
+    assert.match(a, /rel="noopener noreferrer"/);
+  }
+  for (const page of ["services.html", "about.html", "index.html"]) {
+    assert.match(read(page), /href="https:\/\/www\.organizedbychoice\.com"/, `${page} links Organized By Choice`);
+  }
   assert.equal(/Gensler/.test(visible(all).replace(/\[[^\]]*GENSLER[^\]]*\]/g, "")), false);
 });
 
