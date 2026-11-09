@@ -18,7 +18,7 @@ The live site is that Vercel project. `allisonmc.com` and `www.allisonmc.com` ar
 
 ## Stack
 
-Public pages are static HTML, CSS, and a small client script. The build is `node scripts/prepare-static.mjs`. Output is `dist/`. Do not add a framework or an admin site.
+Public pages are static HTML, CSS, and a small client script. The build is `node scripts/prepare-static.mjs`. Output is `dist/`. Do not add a framework or an admin site. Files under `/assets/` are cached for 30 days, so the build appends `?v=<content hash>` to every `assets/` reference in the built HTML (`scripts/asset-version.mjs`). Replace an image at the same path and its URL changes on the next deploy; reference new public assets from the four HTML pages, not from CSS or JS.
 
 One Vercel Function, `api/handler.js`, serves the API. `vercel.json` rewrites `/api/(.*)` to `/api/handler`, so paths such as `/api/projects/:id/media/:mid` and `/api/projects/:id/widgets/:mediaId/open` are not dropped. `/view` rewrites to `/view.html`. `/musings` rewrites to `/musings.html`.
 
