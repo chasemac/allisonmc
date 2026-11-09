@@ -90,3 +90,41 @@ test("a heavy project uses four tabs and shows one panel", () => {
   assert.match(css, /a\.open-widget:hover[\s\S]*color:\s*#f6f1e8/);
   assert.match(css, /\.project-tab\[aria-selected="true"\]:hover[\s\S]*color:\s*#f6f1e8/);
 });
+
+test("3D preview snapshots stay with the model files, not the drawings", () => {
+  const project = {
+    id: "demo-northglass",
+    title: "Synthetic viewing project",
+    summary: "A fictional summary used only to check tab grouping.",
+    fictional: true,
+    sections: [
+      { id: "overview", title: "Overview", blocks: [{ type: "text", text: "Short fictional overview." }] },
+      {
+        id: "role-3d-preview",
+        title: "3D preview",
+        blocks: [{ type: "gallery", images: [{ mediaId: "plan", alt: "Fictional model snapshot", caption: "Fictional snapshot caption" }] }],
+      },
+      {
+        id: "role-plan-sheet",
+        title: "Plan sheet",
+        blocks: [{ type: "gallery", images: [{ mediaId: "section", alt: "Fictional plan", caption: "Fictional plan caption" }] }],
+      },
+      {
+        id: "role-downloadable-pdf",
+        title: "PDF",
+        blocks: [{ type: "attachment", attachmentId: "notes" }],
+      },
+    ],
+    attachments: [{ id: "notes", label: "Fictional notes", kind: "file", mediaId: "notes", filename: "notes.pdf" }],
+  };
+  const { nodes } = boot(project);
+  const drawings = nodes.find((node) => node.id === "panel-drawings");
+  const files = nodes.find((node) => node.id === "panel-files");
+  assert.equal(drawings.textContent.includes("3D preview"), false);
+  assert.equal(drawings.textContent.includes("Fictional snapshot caption"), false);
+  assert.equal(drawings.textContent.includes("Plan sheet"), true);
+  assert.equal(files.textContent.includes("3D preview"), true);
+  assert.equal(files.textContent.includes("Fictional snapshot caption"), true);
+  const download = nodes.find((node) => node.tagName === "A" && String(node.href || "").includes("/attachments/notes"));
+  assert.ok(download);
+});

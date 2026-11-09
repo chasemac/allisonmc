@@ -94,9 +94,10 @@
     const id = section.id || "";
     const blocks = Array.isArray(section.blocks) ? section.blocks : [];
     if (id === "meta-details" || id === "meta-notes" || id === "overview") return "overview";
+    if (id === "role-3d-preview" || id === "3d-preview" || section.title === "3D preview") return "files";
     if (id.indexOf("role-") === 0) {
       const role = id.slice(5);
-      if (["hero", "3d-preview", "page-preview", "plan-sheet", "proposal-preview", "punchlist-preview", "reference-photo", "gallery"].indexOf(role) >= 0) {
+      if (["hero", "page-preview", "plan-sheet", "proposal-preview", "punchlist-preview", "reference-photo", "gallery"].indexOf(role) >= 0) {
         return "drawings";
       }
       return "files";
