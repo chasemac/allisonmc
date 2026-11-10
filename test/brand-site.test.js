@@ -199,7 +199,7 @@ test("the inquiry form has the brief's fields and sends nothing from the site", 
   }
   const form = html.match(/<form\b[^>]*>/)[0];
   assert.equal(/\baction=|\bmethod=/.test(form), false, "no form post");
-  assert.match(form, /data-inquiry-email=""/);
+  assert.equal(/data-inquiry-email\s*=/.test(form), false);
   assert.match(html, /id="inquiry-status"/);
   assert.match(html, /id="inquiry-submit" disabled/);
   assert.match(html, /id="inquiry-panel"[^>]*hidden/);
@@ -210,6 +210,19 @@ test("the inquiry form has the brief's fields and sends nothing from the site", 
   assert.equal(/fetch\(|XMLHttpRequest|sendBeacon|innerHTML/.test(js), false);
   assert.match(js, /mailto:/);
   for (const id of html.matchAll(/<label for="([^"]+)"/g)) assert.match(html, new RegExp(`id="${id[1]}"`));
+});
+
+test("public pages do not include an email address", () => {
+  const address = /[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i;
+  const mailto = /mailto:\s*[^"'\s>]+/i;
+  for (const page of [...SITE_PAGES, "view.html", ...LEGACY_PAGES]) {
+    const html = read(page);
+    assert.equal(address.test(html), false, `${page} has an email address`);
+    assert.equal(mailto.test(html), false, `${page} has a mailto link`);
+    for (const m of html.matchAll(/data-inquiry-email="([^"]*)"/g)) {
+      assert.equal(m[1], "", `${page} data-inquiry-email must stay empty`);
+    }
+  }
 });
 
 test("hidden legacy pages are preserved, not linked and not indexed", () => {
