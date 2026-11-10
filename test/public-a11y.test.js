@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { publicRelativePath } from "../lib/static-public.js";
 import { PAGES, SITE_PAGES } from "../scripts/pages.mjs";
 
 const pages = PAGES;
@@ -89,7 +90,7 @@ test("musings photos use sized WebP and lazy-load below the first image", () => 
 
 test("Lato is the only webfont and it swaps instead of hiding text", () => {
   for (const sheet of ["css/styles.css", "css/site.css", "css/portal.css"]) {
-    const css = readFileSync(sheet, "utf8");
+    const css = readFileSync(sheet, "utf8").replace(/@font-face\s*\{[^}]*\}/g, "");
     // portal.css loads after site.css and uses its --font.
     if (sheet !== "css/portal.css") assert.match(css, /--font:\s*"Lato",\s*-apple-system/, sheet);
     const withoutStack = css.replace(/--font:\s*[^;]+;/, "");
@@ -98,16 +99,20 @@ test("Lato is the only webfont and it swaps instead of hiding text", () => {
       assert.match(declared[1], /var\(--font\)/, declared[1]);
     }
   }
+  const faces = readFileSync("css/site.css", "utf8");
+  assert.equal((faces.match(/font-display:\s*swap/g) || []).length, 6);
   for (const page of pages) {
     const html = readFileSync(page, "utf8");
-    assert.equal(html.includes(latoHref), true, page);
-    assert.equal(html.includes('rel="preconnect" href="https://fonts.googleapis.com"'), true, page);
+    const designer = SITE_PAGES.includes(page);
+    assert.equal(html.includes(latoHref), !designer, page);
+    assert.equal(html.includes('rel="preconnect" href="https://fonts.googleapis.com"'), !designer, page);
     assert.equal(html.includes('rel="preconnect" href="https://fonts.gstatic.com" crossorigin'), true, page);
     const preloads = [...html.matchAll(/<link rel="preload" as="font"[^>]*>/g)].map((match) => match[0]);
     assert.equal(preloads.length, 3, page);
     for (const link of preloads) {
       assert.match(attr(link, "href"), /^https:\/\/fonts\.gstatic\.com\/s\/lato\/.+\.woff2$/);
       assert.match(link, /\bcrossorigin\b/);
+      assert.equal(faces.includes(attr(link, "href")), true, page);
     }
     assert.equal(/<meta name="viewport" content="width=device-width, initial-scale=1"/.test(html), true, page);
     assert.equal(/<meta name="description" content="[^"]+"/.test(html), true, page);
@@ -152,4 +157,45 @@ test("mobile nav drawer links fill the drawer width at a 48px tap height", () =>
   assert.match(rule[1], /width:\s*100%/);
   assert.match(rule[1], /min-height:\s*48px/);
   assert.match(mobile, /\.nav-toggle:checked ~ ul li \{\s*width:\s*100%;/);
+});
+
+test("the desktop nav checkbox is not a tab stop, and focus stays visible on dark bands", () => {
+  const css = readFileSync("css/site.css", "utf8");
+  const wide = css.slice(css.indexOf("@media (min-width: 900px)"));
+  assert.match(wide, /\.nav-toggle \{\s*display:\s*none;/);
+  assert.match(css, /\.band-slate :focus-visible,\s*\.site-footer :focus-visible \{\s*outline-color:\s*var\(--soft-white\);/);
+  assert.match(css, /text-decoration-color:\s*var\(--pine\);/);
+});
+
+test("public pages lazy-load the footer wordmark and the missing page is not indexed", () => {
+  for (const page of SITE_PAGES) {
+    const html = readFileSync(page, "utf8");
+    assert.match(html, /alt="Allison McElroy Design" decoding="async" loading="lazy"/, page);
+  }
+  assert.match(readFileSync("404.html", "utf8"), /<meta name="robots" content="noindex" \/>/);
+  assert.equal(readFileSync("index.html", "utf8").includes('name="robots"'), false);
+});
+
+test("robots.txt and the sitemap cover the public pages and hide the private ones", () => {
+  const robots = readFileSync("robots.txt", "utf8");
+  assert.match(robots, /Sitemap: https:\/\/allisonmc\.com\/sitemap\.xml/);
+  for (const path of ["/view", "/api/", "/musings", "/legacy-home.html"]) assert.match(robots, new RegExp(`Disallow: ${path.replaceAll("/", "\\/")}`));
+  const sitemap = readFileSync("sitemap.xml", "utf8");
+  for (const loc of [
+    "https://allisonmc.com/",
+    "https://allisonmc.com/work.html",
+    "https://allisonmc.com/work-mcelroy-kitchen.html",
+    "https://allisonmc.com/work-mcelroy-bathroom.html",
+    "https://allisonmc.com/services.html",
+    "https://allisonmc.com/about.html",
+    "https://allisonmc.com/stories.html",
+    "https://allisonmc.com/story-our-home-in-phases.html",
+    "https://allisonmc.com/inquire.html",
+  ]) {
+    assert.equal(sitemap.includes(`<loc>${loc}</loc>`), true, loc);
+  }
+  assert.equal(/view|musings|legacy-home|404\.html/.test(sitemap), false);
+  assert.equal(publicRelativePath("/robots.txt"), "robots.txt");
+  assert.equal(publicRelativePath("/sitemap.xml"), "sitemap.xml");
+  assert.match(readFileSync("scripts/prepare-static.mjs", "utf8"), /"robots\.txt", "sitemap\.xml"/);
 });

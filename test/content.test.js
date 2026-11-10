@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import test from "node:test";
-import { PAGES } from "../scripts/pages.mjs";
+import { PAGES, SITE_PAGES } from "../scripts/pages.mjs";
 import { TEST_FIXTURE_CODE } from "../lib/demo-fixture.js";
 
 const pages = PAGES;
@@ -99,7 +99,7 @@ test("pages link to real files and do not load the old template", () => {
   const lato = "family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700";
   for (const page of PAGES) {
     const html = readFileSync(page, "utf8");
-    assert.equal(html.includes(lato), true, page);
+    assert.equal(html.includes(lato), !SITE_PAGES.includes(page), page);
     assert.equal(/Fraunces|Outfit/.test(html), false, page);
   }
   assert.match(css, /--font:\s*"Lato"/);

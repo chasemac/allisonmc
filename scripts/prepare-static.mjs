@@ -9,7 +9,7 @@ const dist = path.join(root, "dist");
 const pages = PAGES;
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
-for (const item of [...pages, "css", "js", "assets", "CNAME"]) {
+for (const item of [...pages, "css", "js", "assets", "CNAME", "robots.txt", "sitemap.xml"]) {
   await cp(path.join(root, item), path.join(dist, item), { recursive: true });
 }
 await versionHtml(dist, pages);
