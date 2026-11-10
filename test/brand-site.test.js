@@ -73,7 +73,6 @@ test("the homepage follows the blueprint order and copy", () => {
     "Selected Work",
     "McElroy Kitchen",
     "Begin with the level of help you actually need.",
-    "Our Costa Mesa Home, in Phases",
     "Modern by training. Timeless by conviction.",
     "Not sure whether you need decorating, organizing or a renovation?",
   ];
@@ -91,11 +90,9 @@ test("the homepage follows the blueprint order and copy", () => {
 
 test("photo slots show the chosen McElroy photos, never placeholders, stock or AI images", () => {
   const photos = {
-    "index.html": ["K-01", "K-02"],
+    "index.html": ["K-01"],
     "work.html": ["K-01"],
     "work-mcelroy-kitchen.html": ["K-01", "K-02", "K-03", "K-04", "K-05"],
-    "stories.html": ["K-02"],
-    "story-our-home-in-phases.html": ["K-01"],
   };
   for (const [page, ids] of Object.entries(photos)) {
     const html = read(page);
@@ -205,7 +202,9 @@ test("the inquiry form has the brief's fields and sends nothing from the site", 
   assert.match(form, /data-inquiry-email=""/);
   assert.match(html, /id="inquiry-status"/);
   assert.match(html, /id="inquiry-submit" disabled/);
+  assert.match(html, /id="inquiry-panel"[^>]*hidden/);
   assert.equal(/Message on Instagram|send Allison a message on/i.test(html), false);
+  assert.equal(html.includes("Tell us a little about your home"), false);
   assert.match(html, /<script src="js\/inquire\.js" defer><\/script>/);
   const js = read("js/inquire.js");
   assert.equal(/fetch\(|XMLHttpRequest|sendBeacon|innerHTML/.test(js), false);

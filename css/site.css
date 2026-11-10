@@ -1033,6 +1033,8 @@ a:hover {
   }
 }
 
-#inquiry-submit:disabled {
+#inquiry-submit:disabled,
+#inquiry-panel[hidden],
+#inquiry[data-inquiry-email=""] {
   display: none;
 }

@@ -7,7 +7,6 @@ export const SITE_PAGES = [
   "services.html",
   "about.html",
   "stories.html",
-  "story-our-home-in-phases.html",
   "inquire.html",
   "404.html",
 ];
