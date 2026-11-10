@@ -47,7 +47,6 @@
             <li><a href="work.html">Work</a></li>
             <li><a href="services.html">Services</a></li>
             <li><a href="about.html">About</a></li>
-            <li><a href="stories.html">Stories</a></li>
             <li><a href="inquire.html" aria-current="page">Inquire</a></li>
             <li class="nav-cta"><a class="button" href="inquire.html">Start a Project</a></li>
           </ul>
@@ -59,12 +58,12 @@
         <div class="wrap narrow">
           <p class="eyebrow">Inquire</p>
           <h1>Start a Project</h1>
-          <p class="lede">Tell us a little about your home and what you are hoping to change. If you are not sure whether you need a refresh, organizing help, color direction or renovation design, that is exactly where we can start.</p>
+          <p class="lede">If you are not sure whether you need a refresh, organizing help, color direction or renovation design, that is exactly where we can start.</p>
         </div>
       </section>
-      <section class="band band-mist">
+      <section class="band band-mist" id="inquiry-panel" hidden>
         <div class="wrap narrow">
-          <form class="inquiry" id="inquiry" data-inquiry-email="" novalidate>
+          <form class="inquiry" id="inquiry" novalidate>
             <div class="field">
               <label for="name">Name</label>
               <input id="name" name="name" type="text" autocomplete="name" required aria-required="true" />
@@ -106,10 +105,6 @@
               <input id="timing" name="timing" type="text" />
             </div>
             <div class="field">
-              <p class="label">Estimated project budget</p>
-              <p><span class="todo">[BUDGET RANGES TO BE ADDED ONLY AFTER ALLISON CONFIRMS THEM]</span></p>
-            </div>
-            <div class="field">
               <label for="referral">How did you hear about Allison McElroy Design? <span class="optional">(optional)</span></label>
               <input id="referral" name="referral" type="text" />
             </div>
@@ -117,7 +112,7 @@
               <label for="notes">Anything else we should know? <span class="optional">(optional)</span></label>
               <textarea id="notes" name="notes" rows="4"></textarea>
             </div>
-            <p class="form-note" id="inquiry-status" role="status"><span class="todo">[INQUIRY EMAIL ADDRESS TO CONFIRM. Once it is set, this form opens a pre-filled email to Allison; nothing is sent from this site.]</span></p>
+            <p class="form-note" id="inquiry-status" role="status"></p>
             <p><button class="button" type="submit" id="inquiry-submit" disabled>Send by email</button></p>
           </form>
         </div>
@@ -142,7 +137,6 @@
             <li><a href="work.html">Work</a></li>
             <li><a href="services.html">Services</a></li>
             <li><a href="about.html">About</a></li>
-            <li><a href="stories.html">Stories</a></li>
             <li><a href="inquire.html">Start a Project</a></li>
           </ul>
         </nav>

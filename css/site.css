@@ -460,7 +460,7 @@ a:hover {
 /* Cards */
 .cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 22rem));
   gap: clamp(1.25rem, 3vw, 2rem);
   margin: 1.5rem 0 2rem;
   padding: 0;
@@ -479,6 +479,15 @@ a:hover {
 .card h2 a,
 .card h3 a {
   color: var(--ink);
+}
+
+.card-plain {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: start;
+  padding: 1.5rem;
+  background: var(--ivory);
 }
 
 .meta {
@@ -1022,4 +1031,11 @@ a:hover {
     transition: none !important;
     animation: none !important;
   }
+}
+
+#inquiry-submit:disabled,
+#inquiry-panel[hidden],
+#inquiry:not([data-inquiry-email]),
+#inquiry[data-inquiry-email=""] {
+  display: none;
 }

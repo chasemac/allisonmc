@@ -1,13 +1,15 @@
 // Inquiry form: no data leaves this site. When the form carries a confirmed
 // address in data-inquiry-email, submitting opens a pre-filled email in the
-// visitor's own mail app. Until then the button stays disabled.
+// visitor's own mail app. Until then the form and button stay hidden.
 (() => {
   const form = document.getElementById("inquiry");
   if (!form) return;
   const address = (form.dataset.inquiryEmail || "").trim();
   const submit = document.getElementById("inquiry-submit");
   const status = document.getElementById("inquiry-status");
+  const panel = document.getElementById("inquiry-panel");
   if (!/^[^\s@<>"]+@[^\s@<>"]+\.[a-z]{2,}$/i.test(address)) return;
+  if (panel) panel.hidden = false;
   submit.disabled = false;
   status.textContent = "Submitting opens a pre-filled email in your mail app. Nothing is sent from this site.";
 

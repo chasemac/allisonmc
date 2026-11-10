@@ -5,6 +5,11 @@
   "outputDirectory": "dist",
   "cleanUrls": false,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/stories", "destination": "/", "permanent": true },
+    { "source": "/stories/", "destination": "/", "permanent": true },
+    { "source": "/stories.html", "destination": "/", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/handler" },
     { "source": "/musings", "destination": "/musings.html" },

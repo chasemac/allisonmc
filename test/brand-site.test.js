@@ -42,7 +42,7 @@ test("every designer page has the nav, the header wordmark, the CTA and the deli
     assert.match(html, /<link href="css\/site\.css" rel="stylesheet" \/>/, page);
     assert.equal(html.includes("css/styles.css"), false, page);
     const nav = html.match(/<ul id="primary-nav">([\s\S]*?)<\/ul>/)[1];
-    assert.deepEqual([...nav.matchAll(/<a [^>]*>([^<]+)<\/a>/g)].map((m) => m[1]), ["Work", "Services", "About", "Stories", "Inquire", "Start a Project"], page);
+    assert.deepEqual([...nav.matchAll(/<a [^>]*>([^<]+)<\/a>/g)].map((m) => m[1]), ["Work", "Services", "About", "Inquire", "Start a Project"], page);
     assert.match(html, /wordmark-horizontal-black-800\.png" width="800" height="169" alt="Allison McElroy Design, home"/, page);
     assert.match(html, /wordmark-stacked-white-960\.png/, page);
     for (const line of ["Based in Costa Mesa, California", "Serving Orange County in person", "Select services available remotely"]) {
@@ -72,10 +72,7 @@ test("the homepage follows the blueprint order and copy", () => {
     "Start with what is already there.",
     "Selected Work",
     "McElroy Kitchen",
-    "McElroy Bathroom",
-    "Buckner Camp Kitchen",
     "Begin with the level of help you actually need.",
-    "Our Costa Mesa Home, in Phases",
     "Modern by training. Timeless by conviction.",
     "Not sure whether you need decorating, organizing or a renovation?",
   ];
@@ -88,20 +85,14 @@ test("the homepage follows the blueprint order and copy", () => {
   assert.match(html, /<h1>Timeless homes, designed for real life\.<\/h1>/);
   assert.match(html, /href="inquire\.html">Start a Project<\/a><a class="button button-quiet" href="services\.html">Explore Services<\/a>/);
   assert.match(html, /<p class="status">Completed 2025<\/p>/);
-  assert.match(html, /<p class="status">Concept design<\/p>/);
+  assert.equal(html.includes("Buckner Camp"), false);
 });
 
-test("photo slots show the chosen McElroy photos or labeled placeholders, never stock or AI images", () => {
+test("photo slots show the chosen McElroy photos, never placeholders, stock or AI images", () => {
   const photos = {
     "index.html": ["K-01"],
     "work.html": ["K-01"],
     "work-mcelroy-kitchen.html": ["K-01", "K-02", "K-03", "K-04", "K-05"],
-  };
-  const placeholders = {
-    "index.html": ["B-01", "K-07"],
-    "work-mcelroy-kitchen.html": ["K-07", "K-08"],
-    "work-mcelroy-bathroom.html": ["B-01", "B-02", "B-03", "B-04", "B-05", "B-06"],
-    "about.html": ["C-01"],
   };
   for (const [page, ids] of Object.entries(photos)) {
     const html = read(page);
@@ -110,9 +101,11 @@ test("photo slots show the chosen McElroy photos or labeled placeholders, never 
       assert.equal(html.includes(`[PHOTO: ${id}]`), false, `${page} ${id} still a placeholder`);
     }
   }
-  for (const [page, ids] of Object.entries(placeholders)) {
+  for (const page of SITE_PAGES) {
     const html = read(page);
-    for (const id of ids) assert.match(html, new RegExp(`\\[PHOTO: ${id}\\]`), `${page} ${id}`);
+    assert.equal(/\[PHOTO:/.test(html), false, `${page} still has a photo placeholder`);
+    assert.equal(html.includes('class="ph ') || html.includes("class='ph "), false, `${page} still has a placeholder frame`);
+    assert.equal(html.includes("ph-frame"), false, `${page} still has a placeholder frame`);
   }
   // A-01 is Allison's portrait (supplied by Chase), on the homepage About band and the About page.
   for (const page of ["index.html", "about.html"]) {
@@ -120,8 +113,6 @@ test("photo slots show the chosen McElroy photos or labeled placeholders, never 
     assert.equal(html.includes("[PHOTO: A-01]"), false, `${page} A-01 still a placeholder`);
     assert.match(html, /data-photo="A-01">\s*<picture>[\s\S]*?src="assets\/img\/allison-a01-\d+\.jpg"[^>]*alt="Allison McElroy"/, `${page} A-01`);
   }
-  assert.match(read("work-mcelroy-kitchen.html"), /During the renovation/);
-  assert.match(read("work-mcelroy-kitchen.html"), /<span class="ph-label">Before<\/span>/);
   for (const page of SITE_PAGES) {
     for (const img of read(page).match(/<img\b[^>]*>/g) || []) {
       assert.match(img, /src="assets\/img\/(wordmark-|kitchen-k0[1-5]|allison-a01)/, `${page} has an unexpected image: ${img}`);
@@ -146,7 +137,7 @@ test("every referenced photo file exists and carries no EXIF or GPS block", () =
   }
 });
 
-test("open facts stay visible placeholders instead of guesses", () => {
+test("open facts are omitted from public pages instead of being guessed", () => {
   const all = SITE_PAGES.map(read).join("\n");
   for (const marker of [
     "CONFIRM PUBLIC PERMISSION AND STATUS WORDING FOR BUCKNER CAMP",
@@ -155,12 +146,18 @@ test("open facts stay visible placeholders instead of guesses", () => {
     "CONFIRM EXACT GENSLER ROLE AND PROJECT EXPERIENCE BEFORE PUBLISHING",
     "CONFIRM WHICH SERVICES ARE FULLY REMOTE",
     "BUDGET RANGES TO BE ADDED ONLY AFTER ALLISON CONFIRMS THEM",
+    "TO WRITE WITH ALLISON",
+    "TO CONFIRM WITH ALLISON",
+    "SERVICES PROVIDED TO CONFIRM",
+    "PHOTOGRAPHER CREDIT, WHEN KNOWN",
+    "INQUIRY EMAIL ADDRESS TO CONFIRM",
+    "class=\"todo\"",
   ]) {
-    assert.equal(all.includes(marker), true, marker);
+    assert.equal(all.includes(marker), false, marker);
   }
   assert.equal(/\$\s?\d/.test(visible(all)), false, "no prices");
   assert.equal(/testimonial|award/i.test(visible(all)), false);
-  // Chase supplied Brenda's site, so Organized By Choice links out; her service area, pricing and schedule stay placeholders.
+  // Chase supplied Brenda's site, so Organized By Choice links out; unconfirmed delivery, travel and schedule details are omitted.
   for (const a of all.match(/<a [^>]*organizedbychoice\.com[^>]*>/g) || []) {
     assert.match(a, /href="https:\/\/www\.organizedbychoice\.com"/);
     assert.match(a, /rel="noopener noreferrer"/);
@@ -176,15 +173,14 @@ test("open facts stay visible placeholders instead of guesses", () => {
   for (const page of ["services.html", "about.html", "index.html"]) {
     assert.match(read(page), /href="https:\/\/www\.organizedbychoice\.com"/, `${page} links Organized By Choice`);
   }
-  assert.equal(/Gensler/.test(visible(all).replace(/\[[^\]]*GENSLER[^\]]*\]/g, "")), false);
+  assert.equal(/Gensler/.test(visible(all)), false);
 });
 
-test("Buckner Camp stays a concept card with no public image or private link", () => {
-  for (const page of ["index.html", "work.html"]) {
+test("Buckner Camp is not listed on public work pages until wording is confirmed", () => {
+  for (const page of SITE_PAGES) {
     const html = read(page);
-    const card = html.slice(html.indexOf("Buckner Camp Kitchen") - 600, html.indexOf("Buckner Camp Kitchen") + 600);
-    assert.match(card, /Concept design/);
-    assert.equal(/<img|view\.html|proj_buckner/.test(card), false, page);
+    assert.equal(/Buckner/i.test(html), false, page);
+    assert.equal(/proj_buckner/.test(html), false, page);
   }
 });
 
@@ -203,13 +199,30 @@ test("the inquiry form has the brief's fields and sends nothing from the site", 
   }
   const form = html.match(/<form\b[^>]*>/)[0];
   assert.equal(/\baction=|\bmethod=/.test(form), false, "no form post");
-  assert.match(form, /data-inquiry-email=""/);
+  assert.equal(/data-inquiry-email\s*=/.test(form), false);
+  assert.match(html, /id="inquiry-status"/);
   assert.match(html, /id="inquiry-submit" disabled/);
+  assert.match(html, /id="inquiry-panel"[^>]*hidden/);
+  assert.equal(/Message on Instagram|send Allison a message on/i.test(html), false);
+  assert.equal(html.includes("Tell us a little about your home"), false);
   assert.match(html, /<script src="js\/inquire\.js" defer><\/script>/);
   const js = read("js/inquire.js");
   assert.equal(/fetch\(|XMLHttpRequest|sendBeacon|innerHTML/.test(js), false);
   assert.match(js, /mailto:/);
   for (const id of html.matchAll(/<label for="([^"]+)"/g)) assert.match(html, new RegExp(`id="${id[1]}"`));
+});
+
+test("public pages do not include an email address", () => {
+  const address = /[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i;
+  const mailto = /mailto:\s*[^"'\s>]+/i;
+  for (const page of [...SITE_PAGES, "view.html", ...LEGACY_PAGES]) {
+    const html = read(page);
+    assert.equal(address.test(html), false, `${page} has an email address`);
+    assert.equal(mailto.test(html), false, `${page} has a mailto link`);
+    for (const m of html.matchAll(/data-inquiry-email="([^"]*)"/g)) {
+      assert.equal(m[1], "", `${page} data-inquiry-email must stay empty`);
+    }
+  }
 });
 
 test("hidden legacy pages are preserved, not linked and not indexed", () => {
