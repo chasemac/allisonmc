@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /view
+Disallow: /api/
+Disallow: /musings
+Disallow: /legacy-home.html
+
+Sitemap: https://allisonmc.com/sitemap.xml

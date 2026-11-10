@@ -1,6 +1,58 @@
 /* Allison McElroy Design: public site. Palette "Evergreen + Slate" and the
    Lato 300/400/700 system from Allison's brand toolkit (Nov 9, 2026).
-   view.html adds css/portal.css; musings.html and legacy-home.html keep css/styles.css. */
+   view.html adds css/portal.css; musings.html and legacy-home.html keep css/styles.css.
+   These faces are the latin woff2 files named by the preload links. The build
+   refreshes the marked block from Google's stylesheet when it can. */
+/* lato-faces:start */
+@font-face {
+  font-family: "Lato";
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/lato/v25/S6u_w4BMUTPHjxsI9w2_Gwft.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/lato/v25/S6u8w4BMUTPHjxsAXC-q.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/lato/v25/S6u_w4BMUTPHjxsI5wq_Gwft.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh7USSwiPGQ.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/lato/v25/S6uyw4BMUTPHjx4wXg.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVSwiPGQ.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* lato-faces:end */
 :root {
   --soft-white: #faf9f6;
   --ivory: #f3efe7;
@@ -307,7 +359,7 @@ a:hover {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.45em;
-  text-decoration-color: var(--sea-glass);
+  text-decoration-color: var(--pine);
 }
 
 .nav-toggle {
@@ -315,6 +367,11 @@ a:hover {
   opacity: 0;
   width: 1px;
   height: 1px;
+}
+
+.nav-toggle:focus,
+.nav-toggle:focus-visible {
+  outline: none;
 }
 
 .nav label {
@@ -353,6 +410,11 @@ a:hover {
 
 .band-slate h2 {
   color: var(--soft-white);
+}
+
+.band-slate :focus-visible,
+.site-footer :focus-visible {
+  outline-color: var(--soft-white);
 }
 
 .band-slate .button-light {
@@ -469,7 +531,7 @@ a:hover {
 .ph-quiet {
   background: var(--ivory);
   border-style: solid;
-  border-color: var(--sea-glass);
+  border-color: var(--slate);
 }
 
 .ph-id {
@@ -940,6 +1002,12 @@ a:hover {
 
   .actions .button {
     flex: 1 1 100%;
+  }
+}
+
+@media (min-width: 900px) {
+  .nav-toggle {
+    display: none;
   }
 }
 

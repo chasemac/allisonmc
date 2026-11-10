@@ -25,9 +25,16 @@
     const name = form.elements.name.value.trim();
     const email = form.elements.email.value.trim();
     const location = form.elements.location.value.trim();
+    for (const field of [form.elements.name, form.elements.email, form.elements.location]) {
+      field.removeAttribute("aria-invalid");
+      field.removeAttribute("aria-describedby");
+    }
     if (!name || !email || !form.elements.email.checkValidity() || !location) {
+      const invalid = !name ? form.elements.name : !email || !form.elements.email.checkValidity() ? form.elements.email : form.elements.location;
+      invalid.setAttribute("aria-invalid", "true");
+      invalid.setAttribute("aria-describedby", "inquiry-status");
       status.textContent = "Please add your name, a valid email address and the project location.";
-      (!name ? form.elements.name : !email || !form.elements.email.checkValidity() ? form.elements.email : form.elements.location).focus();
+      invalid.focus();
       return;
     }
     const data = new FormData(form);

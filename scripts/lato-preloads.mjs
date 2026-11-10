@@ -14,17 +14,46 @@ const WOFF2 = /^https:\/\/fonts\.gstatic\.com\/[A-Za-z0-9_\/.-]+\.woff2$/;
 // Google serves woff2 only to browsers it recognises.
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
 
+function latinFace(css, style, weight) {
+  const body = [...css.matchAll(/\/\* latin \*\/\s*@font-face\s*\{([^}]*)\}/g)]
+    .map((match) => match[1])
+    .find((face) => new RegExp(`font-style:\\s*${style}`).test(face) && new RegExp(`font-weight:\\s*${weight}\\b`).test(face));
+  const url = body && body.match(/url\(([^)]+)\)\s*format\('woff2'\)/)?.[1];
+  if (!url || !WOFF2.test(url)) throw new Error(`no latin woff2 for Lato ${style} ${weight}`);
+  return url;
+}
+
 export function latinNormalUrls(css) {
-  const urls = [];
-  for (const weight of PRELOAD_WEIGHTS) {
-    const face = [...css.matchAll(/\/\* latin \*\/\s*@font-face\s*\{([^}]*)\}/g)]
-      .map((match) => match[1])
-      .find((body) => /font-style:\s*normal/.test(body) && new RegExp(`font-weight:\\s*${weight}\\b`).test(body));
-    const url = face && face.match(/url\(([^)]+)\)\s*format\('woff2'\)/)?.[1];
-    if (!url || !WOFF2.test(url)) throw new Error(`no latin woff2 for Lato ${weight}`);
-    urls.push(url);
+  return PRELOAD_WEIGHTS.map((weight) => latinFace(css, "normal", weight));
+}
+
+// Latin only. The public copy does not need the latin-ext files.
+const LATIN_RANGE = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD";
+const FACE_BLOCK = /\/\* lato-faces:start \*\/[\s\S]*?\/\* lato-faces:end \*\//;
+
+export function latinFaces(css) {
+  const faces = [];
+  for (const style of ["italic", "normal"]) {
+    for (const weight of PRELOAD_WEIGHTS) faces.push({ style, weight, url: latinFace(css, style, weight) });
   }
-  return urls;
+  return faces;
+}
+
+export function fontFaceBlock(faces) {
+  const rules = faces.map((face) => `@font-face {
+  font-family: "Lato";
+  font-style: ${face.style};
+  font-weight: ${face.weight};
+  font-display: swap;
+  src: url("${face.url}") format("woff2");
+  unicode-range: ${LATIN_RANGE};
+}`);
+  return `/* lato-faces:start */\n${rules.join("\n")}\n/* lato-faces:end */`;
+}
+
+export function replaceFontFaces(css, faces) {
+  if (!FACE_BLOCK.test(css)) throw new Error("lato-faces markers are missing");
+  return css.replace(FACE_BLOCK, fontFaceBlock(faces));
 }
 
 export function preloadBlock(urls, indent = "    ") {
@@ -39,10 +68,14 @@ export function replacePreloads(html, urls) {
   return html.replace(BLOCK, preloadBlock(urls, indent));
 }
 
-export async function fetchLatoUrls({ fetchImpl = fetch, timeoutMs = 5000 } = {}) {
+export async function fetchLatoCss({ fetchImpl = fetch, timeoutMs = 5000 } = {}) {
   const response = await fetchImpl(LATO_CSS, { headers: { "user-agent": BROWSER_UA }, signal: AbortSignal.timeout(timeoutMs) });
   if (!response.ok) throw new Error(`Google Fonts CSS returned ${response.status}`);
-  return latinNormalUrls(await response.text());
+  return response.text();
+}
+
+export async function fetchLatoUrls(options) {
+  return latinNormalUrls(await fetchLatoCss(options));
 }
 
 // Rewrites the marked block in each page. Returns the URLs written.
@@ -56,10 +89,24 @@ export async function writePreloads(dir, pages, urls) {
 
 // Build step: refresh dist/ from Google. If Google cannot be reached the
 // committed links stay as they are, and the build still succeeds.
+async function writeFontFaces(dir, faces) {
+  const file = path.join(dir, "css", "site.css");
+  const css = await readFile(file, "utf8");
+  await writeFile(file, replaceFontFaces(css, faces));
+}
+
 export async function refreshPreloads(dir, pages, options) {
   try {
-    const urls = await fetchLatoUrls(options);
+    const css = await fetchLatoCss(options);
+    const urls = latinNormalUrls(css);
     await writePreloads(dir, pages, urls);
+    try {
+      await writeFontFaces(dir, latinFaces(css));
+    } catch (error) {
+      // HTML preloads still update when the output has no site.css yet, or when
+      // a partial stylesheet cannot name every latin face.
+      if (error.code !== "ENOENT" && !/no latin woff2|lato-faces markers/.test(error.message)) throw error;
+    }
     return { refreshed: true, urls };
   } catch (error) {
     return { refreshed: false, reason: error.message };
@@ -70,13 +117,17 @@ export async function refreshPreloads(dir, pages, options) {
 // `--check` exits 1 when they are out of date.
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const pages = PAGES;
-  const urls = await fetchLatoUrls();
+  const css = await fetchLatoCss();
+  const urls = latinNormalUrls(css);
+  const faces = latinFaces(css);
+  const sheet = path.join("css", "site.css");
   if (process.argv.includes("--check")) {
     const stale = [];
     for (const page of pages) {
       const html = await readFile(page, "utf8");
       if (replacePreloads(html, urls) !== html) stale.push(page);
     }
+    if (replaceFontFaces(await readFile(sheet, "utf8"), faces) !== await readFile(sheet, "utf8")) stale.push(sheet);
     if (stale.length) {
       console.error(`Lato preloads are out of date in ${stale.join(", ")}. Run node scripts/lato-preloads.mjs.`);
       process.exit(1);
@@ -84,6 +135,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     console.log("Lato preloads are current.");
   } else {
     await writePreloads(process.cwd(), pages, urls);
+    await writeFontFaces(process.cwd(), faces);
     console.log(urls.join("\n"));
   }
 }
