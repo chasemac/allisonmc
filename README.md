@@ -8,7 +8,7 @@ Agent constraints are in [AGENTS.md](AGENTS.md). Runtime detail is in [docs/runb
 
 - `/` and `/index.html` — Allison McElroy Design home
 - `/work.html`, `/work-mcelroy-kitchen.html` — work index and the McElroy Kitchen project page
-- `/services.html`, `/about.html`, `/stories.html`, `/inquire.html` — services, about, stories and inquire
+- `/services.html`, `/about.html`, `/inquire.html` — services, about and inquire
 - `/legacy-home.html` and `/musings.html` — the earlier home page and musings, kept but hidden (`noindex`, not linked)
 - `/view.html` — code form for a private project, also available as `/view` on Vercel
 

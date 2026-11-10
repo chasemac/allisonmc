@@ -6,7 +6,6 @@ export const SITE_PAGES = [
   "work-mcelroy-kitchen.html",
   "services.html",
   "about.html",
-  "stories.html",
   "inquire.html",
   "404.html",
 ];

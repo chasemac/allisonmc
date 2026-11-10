@@ -187,7 +187,6 @@ test("robots.txt and the sitemap cover the public pages and hide the private one
     "https://allisonmc.com/work-mcelroy-kitchen.html",
     "https://allisonmc.com/services.html",
     "https://allisonmc.com/about.html",
-    "https://allisonmc.com/stories.html",
     "https://allisonmc.com/inquire.html",
   ]) {
     assert.equal(sitemap.includes(`<loc>${loc}</loc>`), true, loc);

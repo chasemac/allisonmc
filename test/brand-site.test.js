@@ -42,7 +42,7 @@ test("every designer page has the nav, the header wordmark, the CTA and the deli
     assert.match(html, /<link href="css\/site\.css" rel="stylesheet" \/>/, page);
     assert.equal(html.includes("css/styles.css"), false, page);
     const nav = html.match(/<ul id="primary-nav">([\s\S]*?)<\/ul>/)[1];
-    assert.deepEqual([...nav.matchAll(/<a [^>]*>([^<]+)<\/a>/g)].map((m) => m[1]), ["Work", "Services", "About", "Stories", "Inquire", "Start a Project"], page);
+    assert.deepEqual([...nav.matchAll(/<a [^>]*>([^<]+)<\/a>/g)].map((m) => m[1]), ["Work", "Services", "About", "Inquire", "Start a Project"], page);
     assert.match(html, /wordmark-horizontal-black-800\.png" width="800" height="169" alt="Allison McElroy Design, home"/, page);
     assert.match(html, /wordmark-stacked-white-960\.png/, page);
     for (const line of ["Based in Costa Mesa, California", "Serving Orange County in person", "Select services available remotely"]) {
