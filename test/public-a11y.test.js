@@ -185,7 +185,6 @@ test("robots.txt and the sitemap cover the public pages and hide the private one
     "https://allisonmc.com/",
     "https://allisonmc.com/work.html",
     "https://allisonmc.com/work-mcelroy-kitchen.html",
-    "https://allisonmc.com/work-mcelroy-bathroom.html",
     "https://allisonmc.com/services.html",
     "https://allisonmc.com/about.html",
     "https://allisonmc.com/stories.html",

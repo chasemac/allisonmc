@@ -4,7 +4,6 @@ export const SITE_PAGES = [
   "index.html",
   "work.html",
   "work-mcelroy-kitchen.html",
-  "work-mcelroy-bathroom.html",
   "services.html",
   "about.html",
   "stories.html",

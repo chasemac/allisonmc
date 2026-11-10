@@ -72,7 +72,6 @@ test("the homepage follows the blueprint order and copy", () => {
     "Start with what is already there.",
     "Selected Work",
     "McElroy Kitchen",
-    "McElroy Bathroom",
     "Begin with the level of help you actually need.",
     "Our Costa Mesa Home, in Phases",
     "Modern by training. Timeless by conviction.",
@@ -204,7 +203,9 @@ test("the inquiry form has the brief's fields and sends nothing from the site", 
   const form = html.match(/<form\b[^>]*>/)[0];
   assert.equal(/\baction=|\bmethod=/.test(form), false, "no form post");
   assert.match(form, /data-inquiry-email=""/);
+  assert.match(html, /id="inquiry-status"/);
   assert.match(html, /id="inquiry-submit" disabled/);
+  assert.equal(/Message on Instagram|send Allison a message on/i.test(html), false);
   assert.match(html, /<script src="js\/inquire\.js" defer><\/script>/);
   const js = read("js/inquire.js");
   assert.equal(/fetch\(|XMLHttpRequest|sendBeacon|innerHTML/.test(js), false);
