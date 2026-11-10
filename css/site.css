@@ -484,8 +484,8 @@ a:hover {
 .card-plain {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  min-height: 12rem;
+  justify-content: flex-start;
+  align-self: start;
   padding: 1.5rem;
   background: var(--ivory);
 }
